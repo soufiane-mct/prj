@@ -1,0 +1,39 @@
+services:
+  postgres:
+    container_name: postgres-sql-bsn
+    image: postgres
+    environment:
+      POSTGRES_USER: username #hna smia dl app dyalna
+      POSTGRES_PASSWORD: password #hna mod dl app
+      PGDATA: /var/lib/postgresql/data #hna fin atkhzn data
+      POSTGRES_DB: book_social_network #smia data base dyalna
+    volumes:
+      - postgres:/data/postgres #hna volums drnahom ltht
+    ports:
+     - 5432:5432 #lwla public o tania container port
+    networks: #hna bsh hdshi kml ykon f same network
+     - spring-demo
+
+    restart: unless-stopped #lahbes l container dir restart ewtani
+
+  #hit ankhdmo b mail dir hd comond jbnaha mn gethub maildev bsh ymkna nkhdmo bl mail
+  #$ docker run -p 1080:1080 -p 1025:1025 maildev/maildev
+mail-dev:
+   container_name: mail-dev-bsn
+   image: maildev/maildev
+   poerts:
+     - 1080:1080
+     - 1025:1025 #lwla port dl maol tania d spring
+
+
+networks:
+  spring-demo:
+    driver: bridge
+
+volumes:
+  postgres:
+    driver: local
+
+# dkhl l comendline o dir
+#docker-compose up -d
+#bach tkhdm hdshi kml

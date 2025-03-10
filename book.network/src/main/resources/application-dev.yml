@@ -1,0 +1,48 @@
+#hna hd file ayrit mn application.yml
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_social_network
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+      format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSLDialect
+
+#hna config dyal l mail
+  mail:
+    host: localhost
+    port: 1025 #lidrna fl file docker
+    username: sou
+    password: sou
+    properties:
+      mail:
+      smtp:
+      trust: "*"
+      auth: true
+      starttls:
+      enable: true
+      connectiontimout: 5000
+      timeout: 3000
+      writetimeout: 5000
+
+application:
+  security:
+      jwt:
+       secret-key: 53Qe4wzw8OVMEaext0AkO1Q4FvCaIkEIe1Nliv0k3q4rTdlt6IusUTikklNxLKh8
+       expiration: 8640000 #hna we9t li y expira jwt dylna (1 day)
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+      #hdi fo9 dyal url d activation email khdmna biha f authservice
+
+server:
+  port: 8081

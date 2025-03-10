@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="container"> <!--container khdmna biha f emailservice-->
+    <h1>Acount Activation</h1>
+    <p class="greeting" th:text = "'Hello' + ${username} + ','"></p>
+    <p>thanks for sign up </p>
+    <div class="activation-code" ><span th:text="${activation_code}"> </span> </div> <!-- $activation_code hma nit vars li drna f emailservice o class dyalha a lbghiti tzid css-->
+    <div class="activation-link" ><a th:href="${confirmationUrl}" target="_blank">Activate your account </a> </div> <!--hda lien d confirmation o $confirmationUrl var drnaha f emailservice-->
+</div>
+</body>
+</html>
+<!--2:45:00-->

@@ -1,0 +1,87 @@
+#spring:
+#  profiles:
+#    active: dev  #hna dev ay detectiha spring mn file application-dev.yml
+#  servlet:
+#    multipart:
+#      max-file-size: 50MB
+#
+#      #ltht config dl openai
+#springdoc:
+#  default-produces-media-type: application/json
+#
+#server:
+#  servlet:
+#    context-path: /api/v1/
+#    #hna fsh anhtajo api bla mnbdaw ndiro path api/v1 kla mera
+
+#5433
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_social_network
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate.physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      hibernate.format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect  # Correct dialect
+
+
+
+  mail:
+    host: smtp.mailtrap.io
+    port: 587
+    username: ba441ad487713b
+    password: 3788cefe1b4f50
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.mailtrap.io
+
+
+
+
+
+
+#  mail:
+#    host: localhost
+#    port: 1025
+#    username: sou
+#    password: sou
+#    properties:
+#      mail.smtp.trust: "*"
+#      mail.smtp.auth: true
+#      mail.smtp.starttls.enable: true
+#      mail.smtp.connectiontimeout: 5000
+#      mail.smtp.timeout: 3000
+#      mail.smtp.writetimeout: 5000t!^)
+
+application:
+  security:
+    jwt:
+      secret-key: 53Qe4wzw8OVMEaext0AkO1Q4FvCaIkEIe1Nliv0k3q4rTdlt6IusUTikklNxLKh8
+      expiration: 8640000  # JWT expiration in milliseconds (1 day)
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+  #    #hna fsh anhtajo api bla mnbdaw ndiro path api/v1 kla mera
+
+logging:
+  level:
+    org.springframework.security: DEBUG
