@@ -31,7 +31,7 @@ public class BookTransactionHistory extends BaseEntity { //hna atrit l vars d ba
     private Book book;
 
 
-    private boolean returned; //var atnshofo biha wsh l boo rje3 ola no
+    private boolean returned; //var atnshofo biha wsh l book rje3 ola no
     private boolean returnApproved;//hna mol l ktab fsh ayrej3o lih lktab khas y3ti l approvment
 
 

@@ -34,7 +34,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                          "/v2/api-docs",
                                          "/v3/api-docs",
-                                         "v3/api-docs/**",
+                                         "/v3/api-docs/**",
                                          "/swagger-resources",
                                          "/swagger-resources/**",
                                          "/configuration/ui",
@@ -42,7 +42,6 @@ public class SecurityConfig {
                                          "/swagger-ui/**",
                                          "/webjars/**",
                                          "/swagger-ui.html"
-
                         ).permitAll()//hna hd request li drna f url "" dkhlhom
                                 .anyRequest()
                                 .authenticated()//hna ayrequest akher dir lih authenticated (y3ni mdkhlosh)

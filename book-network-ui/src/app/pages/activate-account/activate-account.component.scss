@@ -1,0 +1,13 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}//bsh njiboha lwst
+
+.activate-message, .activate-error {
+    text-align: center;
+}
+.activate-error{
+    color: red;
+}

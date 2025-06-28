@@ -44,6 +44,19 @@ public class Book extends BaseEntity { //l book kiyrit mn baseEntity (ayrit mno 
     @OneToMany(mappedBy = "book")//book var drnaha fl BookTransactionHistory bch ndiro relationship bin BookTransactionHistory o book o drna fiha column f database bookid tahia
     private List<BookTransactionHistory> histories;
 
+    @Transient double getRate() {
+        if(feedbacks == null || feedbacks.isEmpty()){
+            return 0.0;//hit double lamakan ta feed back o kn emty dir lia 0
+        }
+        var rate = this.feedbacks.stream()
+                .mapToDouble(Feedback::getNote)//jib lia note mn feedback
+                .average()//hna hseb lia l avrege dyal all note
+                .orElse(0.0); //lmknsh tl3 0 hdshi kml diro f var rate
+        //hna l tht andiro lkn ration matalan 2.33 dir lia 2 ola kan 2.60 dir lia 3
+        double roundedRate = Math.round(rate*10.0) / 10.0;
+
+        return roundedRate;
+    }
 
 
 }

@@ -11,6 +11,14 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.springframework.http.HttpHeaders.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,7 +49,28 @@ public class BeansConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-
+    //hd bean bsh ymkn fsh y dir login fl front end ankhliw spring y dir allowed l data li jaya mn front end mn angular
+    @Bean
+    public CorsFilter corsFilter() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins (Collections.singletonList("http://localhost:4200"));
+        config.setAllowedHeaders (Arrays.asList(
+                ORIGIN,
+                CONTENT_TYPE,
+                ACCEPT,
+                AUTHORIZATION
+        ));
+        config.setAllowedMethods (Arrays.asList(
+                "GET",
+                "POST",
+                "DELETE",
+                "PUT",
+                "PATCH"
+        ));
+        source.registerCorsConfiguration("/**", config);// hd l config khdmha f gae paths /books /feedbacks...
+        return new CorsFilter(source);
+    }
 
 }

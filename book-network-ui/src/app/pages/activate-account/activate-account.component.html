@@ -1,0 +1,44 @@
+<!--&lt;!&ndash; npm i angular-code-input  bsh dkhlna extention li ankhdmo biha fl activate-account&ndash;&gt;-->
+<div class="container" *ngIf="submitted" else codeForm> <!--knt submit dir hd container mkntsh dir dkshi li kyn f codeForm ra l tht f template-->
+    <div class="activate-message" *ngIf="isOkay else activationError"> <!--isokey drnaha f ts etinaha true-->
+        <h2>activation successfuly</h2>
+        <p>Your account has been activated successfuly</p>
+        <button class="btn btn-primary" (click)="redirectTologin()">Go to login</button>
+    </div>
+    <ng-template #activationError>
+        <div class="activate-error" >
+            <h2>activation failed</h2>
+            <p>{{message}}</p><!--message drnaha f ts string-->
+            <button class="btn btn-primary" (click)="submitted = false">Try again</button>
+        </div>
+    </ng-template>
+</div>
+
+<ng-template #codeForm>
+    <div class="container">
+        <div class="text-center" style="width: 400px;">
+            <h2>Type your activation code</h2><!--hdi li glna khas dkhlha o t3iyt lih f ts CodeInputModule o dir liha import-->
+            <code-input [isCodeHidden]="false"
+            [codeLength]="6"
+            [code]="'number'"
+            (codeCompleted)="onCodeCompleted($event)"
+            > <!--hna ktgolih mykonsh hidden o fih 6 numbers o fsh ykml l code dir lia method onCodeCompleted li drna f ts -->
+
+            </code-input>
+        </div>
+    </div>
+</ng-template>
+
+
+<div class="container">
+  <div class="text-center" style="width: 400px;">
+    <h2>Type your activation code</h2><!--hdi li glna khas dkhlha o t3iyt lih f ts CodeInputModule o dir liha import-->
+    <code-input [isCodeHidden]="false"
+                [codeLength]="6"
+                [code]="'number'"
+                (codeCompleted)="onCodeCompleted($event)"
+    > <!--hna ktgolih mykonsh hidden o fih 6 numbers o fsh ykml l code dir lia method onCodeCompleted li drna f ts -->
+
+    </code-input>
+  </div>
+</div>

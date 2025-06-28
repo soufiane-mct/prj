@@ -5,11 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,9 +25,9 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class JwtFilter extends OncePerRequestFilter {
 
     //blast mdirconstracture
-    private  JwtService jwtService;
+    private final  JwtService jwtService;
  //   @Autowired //blast mdirconstracture
-    private  UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
 
     @Override

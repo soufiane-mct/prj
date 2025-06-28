@@ -38,7 +38,8 @@ application:
   security:
       jwt:
        secret-key: 53Qe4wzw8OVMEaext0AkO1Q4FvCaIkEIe1Nliv0k3q4rTdlt6IusUTikklNxLKh8
-       expiration: 8640000 #hna we9t li y expira jwt dylna (1 day)
+       expiration: 86400000 #hna we9t li y expira jwt dylna (1 day)
+       activation-expiration: 259200000  # 3 days for activation link
   mailing:
     frontend:
       activation-url: http://localhost:4200/activate-account

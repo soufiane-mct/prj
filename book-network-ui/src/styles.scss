@@ -1,4 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
-body {
-  background-color: lightblue;
+// mormadkhlna l bootstrap f project dylna dir lih import
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// f ay ta9 fih login-container dir fih hdshi
+.login-container{
+    width: 800px !important;
+    margin-top: 15%;
 }

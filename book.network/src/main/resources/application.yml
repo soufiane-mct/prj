@@ -17,7 +17,7 @@
 #5433
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/book_social_network
+    url: jdbc:postgresql://localhost:5432/RentProduct
     username: postgres
     password: admin
     driver-class-name: org.postgresql.Driver
@@ -31,7 +31,6 @@ spring:
       hibernate.format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect  # Correct dialect
-
 
 
   mail:
@@ -74,6 +73,14 @@ application:
   mailing:
     frontend:
       activation-url: http://localhost:4200/activate-account
+
+  file:
+    upload:
+      photos-output-path: ./uploads  #y3ni aykon endna file smito uploads li andiro fih tsawr o ankhdmo biha f filestorageservice
+
+servlet:
+     multipart:
+       max-file-size: 50MB #hna andiro file cover picture ytkhsno hna fl files li andiro mshi f data base max dhd l file (ra atl9a dossier file 3antari9o andiro fih hdshi) ykon 50M
 
 
 server:

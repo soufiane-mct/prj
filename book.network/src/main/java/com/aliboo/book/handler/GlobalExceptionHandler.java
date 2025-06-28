@@ -1,7 +1,7 @@
 package com.aliboo.book.handler;
 
+import com.aliboo.book.exception.OperationNotPermitedException;
 import jakarta.mail.MessagingException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -70,6 +70,19 @@ public class GlobalExceptionHandler { //hna dl exeption bch ndiro fiha shihaja m
                 );
     }
 
+    //hdi ankhdmo biha f sharbel exeption l mknsh l user id connected tisawi l book owner id ra f updateShareableStatus f bookservice
+    @ExceptionHandler(OperationNotPermitedException.class) //la mabghash ytsift lina email matalan l shi sabab mn bzff dir hdi
+    public ResponseEntity<ExceptionResponse> handleException (OperationNotPermitedException exp){ //handleException at catshi lina exeption libghina ila bzff dl exeption o db bdina b LockedException
+        return ResponseEntity
+                .status(BAD_REQUEST)//hit err frequest
+                .body(
+                        ExceptionResponse.builder()
+                                .error(exp.getMessage())// dir msg f OperationNotPermitedException (o dk l msg howa li ktbna hna f bookservice)
+                                .build()
+                );
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class) // hd err fhalat t9iyd user o masiftsh valid data bhal name email...
     public ResponseEntity<ExceptionResponse> handleException (MethodArgumentNotValidException exp){ //handleException at catshi lina exeption libghina ila bzff dl exeption o db bdina b LockedException
         Set<String> errors = new HashSet<>();//hna drna set bch lakan nfs msg err kit3awd ytl3o lia a mera whda
@@ -103,5 +116,6 @@ public class GlobalExceptionHandler { //hna dl exeption bch ndiro fiha shihaja m
                                 .build()
                 );
     }
+
 
 }

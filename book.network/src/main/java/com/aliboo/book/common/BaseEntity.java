@@ -32,7 +32,7 @@ public class BaseEntity {
     private  Integer id;
     @CreatedDate
     @Column(nullable = false,updatable = false) //madirsh lo update o maykonsh khawi
-    private LocalDateTime createDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(insertable = false)//mdirsh liha insert (mt3dlsh eliha)
