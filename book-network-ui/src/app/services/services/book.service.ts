@@ -355,7 +355,7 @@ export class BookService extends BaseService {
   uploadBookCoverPictureRaw(bookId: number, file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`/api/v1/books/cover/${bookId}`, formData);
+    return this.http.post(`${this.rootUrl}/books/cover/${bookId}`, formData);
   }
 
 }

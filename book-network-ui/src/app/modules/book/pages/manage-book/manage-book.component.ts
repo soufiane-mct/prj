@@ -52,14 +52,19 @@ export class ManageBookComponent implements OnInit {
   }
 
   saveBook() {
+    console.log('DEBUG: Starting saveBook method');
     this.bookService.saveBook({
       body: this.bookRequest
     }).subscribe({
       next: (bookId) => {
+        console.log('DEBUG: Book saved with ID:', bookId);
         if (this.selectedBookCover) {
+          console.log('DEBUG: About to upload cover for book ID:', bookId);
+          console.log('DEBUG: Selected file:', this.selectedBookCover);
           this.bookService.uploadBookCoverPictureRaw(bookId, this.selectedBookCover)
             .subscribe({
               next: () => {
+                console.log('DEBUG: Cover upload successful');
                 this.router.navigate(['/books/my-books']);
               },
               error: (err) => {
@@ -69,6 +74,7 @@ export class ManageBookComponent implements OnInit {
               }
             });
         } else {
+          console.log('DEBUG: No cover selected, navigating to my-books');
           this.router.navigate(['/books/my-books']);
         }
       },

@@ -281,4 +281,8 @@ public class BookService {
 
     }
 
+    public Book getBookEntityById(Integer bookId) {
+        return bookRepository.findById(bookId).orElse(null);
+    }
+
 }

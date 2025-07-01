@@ -130,8 +130,28 @@ public class BookController {
             @RequestParam("file") MultipartFile file,
             Authentication connectedUser
     ){
+        System.out.println("DEBUG: Received upload request for book ID: " + bookId);
+        System.out.println("DEBUG: File name: " + file.getOriginalFilename());
+        System.out.println("DEBUG: File size: " + file.getSize());
         service.uploadBookCoverPicture(file, connectedUser, bookId);
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/cover/{book-id}")
+    public ResponseEntity<byte[]> getBookCover(@PathVariable("book-id") Integer bookId) {
+        Book book = service.getBookEntityById(bookId);
+        if (book == null || book.getBookCover() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            byte[] image = org.springframework.util.FileCopyUtils.copyToByteArray(new java.io.File(book.getBookCover()));
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "image/png") // Change if you support other types
+                .body(image);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
