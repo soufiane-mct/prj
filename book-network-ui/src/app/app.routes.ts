@@ -19,13 +19,13 @@ export const routes: Routes = [
       component: ActivateAccountComponent
     },
     {
-     path: 'books',
-     loadChildren: () => import('./modules/book/book.module').then(m => m.BookModule), //module.BookModule hit shild path dl books
+     path: 'products',
+     loadChildren: () => import('./modules/book/book.module').then(m => m.BookModule), //module.BookModule hit shild path dl products
      canActivate: [authGuard]
     },
     {
       path: '',
-      redirectTo: '/books',
+      redirectTo: '/products',
       pathMatch: 'full'
     }
 

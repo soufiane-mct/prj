@@ -50,13 +50,10 @@ register(): void {
       this.router.navigate(['activate-account']);
     },
     error: async (err) => {
-      console.log('Full register error:', err);
-
       if (err.error instanceof Blob) {
         const errorText = await err.error.text();
         try {
           const parsed = JSON.parse(errorText);
-          console.log('Parsed register error:', parsed);
 
           if (Array.isArray(parsed)) {
             this.errMsg = parsed;
@@ -68,7 +65,6 @@ register(): void {
             this.errMsg.push('Unexpected error format.');
           }
         } catch (e) {
-          console.error('Register JSON parse error:', e);
           this.errMsg.push('Could not parse register error response.');
         }
       } else {

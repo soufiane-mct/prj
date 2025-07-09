@@ -1,0 +1,216 @@
+// Book list component specific styles
+.page-title {
+  font-weight: 700;
+  color: var(--dark-color);
+  font-size: 2.5rem;
+  
+  i {
+    color: var(--primary-color);
+  }
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  padding: 1rem 0;
+}
+
+.book-card-wrapper {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
+  
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+.loading-state {
+  padding: 3rem 0;
+  
+  h4 {
+    font-weight: 500;
+  }
+}
+
+// Enhanced pagination styling
+.pagination {
+  .page-link {
+    margin: 0 0.25rem;
+    border-radius: var(--border-radius);
+    border: none;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    &:hover::before {
+      left: 100%;
+    }
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--box-shadow);
+    }
+    
+    &.active {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: white;
+      transform: scale(1.05);
+    }
+    
+    &.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// Filter and sort buttons
+.btn-outline-primary, .btn-outline-secondary {
+  border-width: 2px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+  }
+}
+
+// Alert enhancements
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0;
+  
+  &.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-left: 4px solid var(--success-color);
+  }
+  
+  &.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-left: 4px solid var(--danger-color);
+  }
+  
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  .pagination {
+    .page-link {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .books-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start !important;
+  }
+}
+
+// Animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Hover effects for interactive elements
+.btn, .page-link {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Loading animation
+.loading-state {
+  i {
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Page info styling
+.text-muted {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+// Enhanced container spacing
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Card hover effects
+.book-card-wrapper:hover {
+  transform: translateY(-4px);
+  transition: transform 0.3s ease;
+}

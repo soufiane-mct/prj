@@ -1,4 +1,4 @@
-<h2>My borrowed books</h2>
+<h2>Borrowed Products List</h2>
 <hr>
 <div class="d-flex flex-column col-6" *ngIf="selectedBook">
   <h2>Return and share feedback</h2>
@@ -13,7 +13,7 @@
     </div>
     <div class="d-flex">
       <div class="col-1">
-        <strong>Author</strong>
+        <strong>Price</strong>
       </div>
       <div class="col-11">
         {{ selectedBook.authorName }}
@@ -21,7 +21,7 @@
     </div>
     <div class="d-flex">
       <div class="col-1">
-        <strong>ISBN</strong>
+        <strong>Product Code</strong>
       </div>
       <div class="col-11">
         {{ selectedBook.isbn }}
@@ -57,7 +57,7 @@
         <button (click)="returnBook(false)" type="submit" class="btn btn-outline-success">
           <i class="fa-solid fa-paper-plane"></i>&nbsp;Just Return
         </button>
-        <a routerLink="/books/my-books" type="submit" class="btn btn-link btn text-danger">
+        <a routerLink="/products/my-products" type="submit" class="btn btn-link btn text-danger">
           <i class="fas fa-times"></i>&nbsp;Cancel
         </a>
       </div>
@@ -69,9 +69,9 @@
     <thead>
     <tr>
       <th scope="col">#</th>
-      <th scope="col">Title</th>
-      <th scope="col">Author</th>
-      <th scope="col">ISBN</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Price</th>
+      <th scope="col">Product Code</th>
       <th scope="col">Rate</th>
       <th scope="col"><i class="fas fa-cogs"></i></th>
     </tr>
@@ -81,8 +81,8 @@
       *ngFor="let book of borrowedBooks.content; let index = index">
       <th scope="row">{{ index + 1 }}</th>
       <td>{{ book.title }}</td>
-      <td>{{ book.authorName }}</td>
-      <td>{{ book.isbn }}</td>
+      <td class="stylish-cell">{{ book.authorName }}</td>
+      <td class="stylish-cell">{{ book.isbn }}</td>
       <td><i class="fas fa-star text-warning"></i> {{ book.rate }}</td>
       <td>
         <div class="d-flex gap-2">
@@ -156,3 +156,14 @@
     </nav>
   </div>
 </div>
+<style>
+  .stylish-cell {
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+  }
+</style>

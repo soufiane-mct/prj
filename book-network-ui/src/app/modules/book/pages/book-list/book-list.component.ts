@@ -28,6 +28,7 @@ export class BookListComponent implements OnInit {
   pages: any = [];
   message = '';
   level: 'success' |'error' = 'success';
+  Math = Math; // Make Math available in template
 
   constructor(
     private bookService: BookService,
@@ -85,6 +86,11 @@ export class BookListComponent implements OnInit {
     return this.page === this.bookResponse.totalPages as number - 1;
   }
 
+  // TrackBy function for better performance
+  trackByBookId(index: number, book: BookResponse): number {
+    return book.id || index;
+  }
+
   borrowBook(book: BookResponse) {
     this.message = '';
     this.level = 'success';
@@ -96,15 +102,23 @@ export class BookListComponent implements OnInit {
         this.message = 'Book successfully added to your list';
       },
       error: (err) => {
-        console.log(err);
         this.level = 'error';
-        this.message = err.error.error;
+        // Handle different types of errors gracefully
+        if (err.error && err.error.error) {
+          this.message = err.error.error;
+        } else if (err.error && err.error.message) {
+          this.message = err.error.message;
+        } else if (err.message) {
+          this.message = err.message;
+        } else {
+          this.message = 'Unable to borrow book. Please try again.';
+        }
       }
     });
   }
 
   displayBookDetails(book: BookResponse) {
-    this.router.navigate(['books', 'details', book.id]);
+    this.router.navigate(['products', 'details', book.id]);
   }
 
 

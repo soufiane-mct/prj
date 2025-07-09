@@ -1,10 +1,334 @@
 /* You can add global styles to this file, and also import other style files */
-// mormadkhlna l bootstrap f project dylna dir lih import
+// Import Bootstrap and FontAwesome
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// f ay ta9 fih login-container dir fih hdshi
-.login-container{
-    width: 800px !important;
-    margin-top: 15%;
+// Modern CSS Variables for consistent theming
+:root {
+  --primary-color: #6366f1;
+  --primary-dark: #4f46e5;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #06b6d4;
+  --light-color: #f8fafc;
+  --dark-color: #1e293b;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --transition: all 0.3s ease;
+}
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+// Modern card styling
+.card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  
+  &:hover {
+    box-shadow: var(--box-shadow-lg);
+    transform: translateY(-2px);
+  }
+}
+
+// Modern button styling
+.btn {
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: var(--transition);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--box-shadow);
+  }
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    
+    &:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    }
+  }
+  
+  &.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+}
+
+// Modern form styling
+.form-control {
+  border-radius: var(--border-radius);
+  border: 2px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  transition: var(--transition);
+  
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: 0.5rem;
+}
+
+// Modern navbar styling
+.navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--box-shadow);
+  
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+  }
+  
+  .nav-link {
+    font-weight: 500;
+    color: var(--secondary-color) !important;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    margin: 0 0.25rem;
+    
+    &:hover, &.active {
+      color: var(--primary-color) !important;
+      background: rgba(99, 102, 241, 0.1);
+    }
+  }
+}
+
+// Modern pagination styling
+.pagination {
+  .page-link {
+    border: none;
+    color: var(--secondary-color);
+    border-radius: var(--border-radius);
+    margin: 0 0.25rem;
+    transition: var(--transition);
+    
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    &.active {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+}
+
+// Modern alert styling
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 1rem 1.5rem;
+  
+  &.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+  }
+  
+  &.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+  }
+}
+
+// Login container styling
+.login-container {
+  width: 100% !important;
+  max-width: 500px !important;
+  margin: 2rem auto !important;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-lg);
+}
+
+// Book card modern styling
+.book-card {
+  transition: var(--transition);
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+  
+  .card-img-top {
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    object-fit: cover;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .card-footer {
+    background: transparent;
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+  }
+}
+
+// Modern rating component
+.rating {
+  color: #fbbf24;
+  
+  .star {
+    transition: var(--transition);
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Loading spinner
+.spinner-border {
+  color: var(--primary-color);
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .login-container {
+    margin: 1rem !important;
+    padding: 1.5rem;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--primary-dark);
+  }
+}
+
+// Animation classes
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Glass morphism effect
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+// Modern grid layout
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+// Icon improvements
+.icon-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: var(--transition);
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(99, 102, 241, 0.1);
+    transform: scale(1.1);
+  }
+}
+
+// Status badges
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.status-available {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+  }
+  
+  &.status-borrowed {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+  }
+  
+  &.status-archived {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+  }
 }

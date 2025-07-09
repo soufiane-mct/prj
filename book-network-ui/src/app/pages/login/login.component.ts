@@ -60,17 +60,14 @@ constructor(
         this.tokenService.token = res.token as string;
 
         //save the token
-        this.router.navigate(['books']);
+        this.router.navigate(['products']);
       },//dir authenticate o save l token lkn howa o moraha dih l books page
 
       error: async (err): Promise<void> => {//khdmna b Blob hna bsh yhwl data li drna fl backend l json o y9raha lina
-        console.log('Full error:', err);
-
         if (err.error instanceof Blob) {
           const errorText = await err.error.text(); // read the Blob content as string
           try {
             const parsed = JSON.parse(errorText); // parse it to JSON
-            console.log('Parsed error:', parsed);
 
             if (Array.isArray(parsed)) {
               this.errMsg = parsed;
@@ -82,7 +79,6 @@ constructor(
               this.errMsg.push('Unexpected error format.');
             }
           } catch (e) {
-            console.error('JSON parse error:', e);
             this.errMsg.push('Could not parse error response.');
           }
         } else {

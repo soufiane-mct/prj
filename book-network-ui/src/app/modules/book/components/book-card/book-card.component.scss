@@ -1,0 +1,408 @@
+// Book card component styles
+.book-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    
+    .book-overlay {
+      opacity: 1;
+    }
+    
+    .book-cover {
+      transform: scale(1.05);
+    }
+  }
+  
+  &.border-success {
+    border: 2px solid var(--success-color) !important;
+  }
+  
+  &.border-warning {
+    border: 2px solid var(--warning-color) !important;
+  }
+  
+  &.border-secondary {
+    border: 2px solid var(--secondary-color) !important;
+  }
+}
+
+// Book cover container
+.book-cover-container {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.book-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+// Book overlay for hover actions
+.book-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.book-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dark-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  
+  &:hover {
+    transform: scale(1.1);
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  &.details-btn:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  &.borrow-btn:hover {
+    background: var(--success-color);
+    color: white;
+  }
+  
+  &.waiting-btn:hover {
+    background: var(--danger-color);
+    color: white;
+  }
+  
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+// Status badge
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  &.status-available {
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+  }
+  
+  &.status-borrowed {
+    background: rgba(245, 158, 11, 0.9);
+    color: white;
+  }
+  
+  &.status-archived {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+  }
+}
+
+// Card body
+.card-body {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+// Book title
+.book-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  
+  i {
+    color: var(--primary-color);
+  }
+}
+
+// Book details
+.book-details {
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  
+  i {
+    width: 20px;
+    margin-right: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .detail-text {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    font-weight: 500;
+  }
+}
+
+// Book synopsis
+.book-synopsis {
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.synopsis-text {
+  font-size: 0.875rem;
+  color: var(--secondary-color);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+// Rating section
+.rating-section {
+  margin-top: auto;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  .rating-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--warning-color);
+  }
+  
+  .no-rating {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    font-style: italic;
+  }
+}
+
+// Card footer
+.card-footer {
+  background: transparent;
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-button {
+  flex: 1;
+  min-width: 80px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  border-width: 2px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    border-color: var(--success-color);
+    
+    &:hover {
+      background: linear-gradient(135deg, #059669, var(--success-color));
+    }
+  }
+  
+  &.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+  
+  &.btn-outline-danger {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+    
+    &:hover {
+      background: var(--danger-color);
+      color: white;
+    }
+  }
+  
+  &.btn-outline-info {
+    border-color: var(--info-color);
+    color: var(--info-color);
+    
+    &:hover {
+      background: var(--info-color);
+      color: white;
+    }
+  }
+  
+  &.btn-outline-warning {
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+    
+    &:hover {
+      background: var(--warning-color);
+      color: white;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .book-cover-container {
+    height: 220px;
+  }
+  
+  .book-title {
+    font-size: 1.1rem;
+  }
+  
+  .action-btn {
+    width: 45px;
+    height: 45px;
+    
+    i {
+      font-size: 1rem;
+    }
+  }
+  
+  .footer-actions {
+    flex-direction: column;
+    
+    .action-button {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .book-cover-container {
+    height: 200px;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-footer {
+    padding: 1rem;
+  }
+  
+  .book-actions {
+    gap: 0.75rem;
+  }
+  
+  .action-btn {
+    width: 40px;
+    height: 40px;
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Animation for card entrance
+.book-card {
+  animation: cardEntrance 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Hover effects for interactive elements
+.action-btn, .action-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Loading state for images
+.book-cover {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Enhanced focus states for accessibility
+.action-btn:focus,
+.action-button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}

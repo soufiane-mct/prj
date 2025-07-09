@@ -1,44 +1,149 @@
-
-<div class="container-fluid card login-container">
-    <h3 class="text-center">Login</h3>
-    <hr>
-
-    <div class="alert alert-danger" role="alert" *ngIf="errMsg?.length">
-      <p *ngFor="let msg of errMsg">{{msg}}</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Header -->
+    <div class="auth-header text-center mb-4">
+      <div class="auth-icon">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <h2 class="auth-title">Create Account</h2>
+      <p class="auth-subtitle">Join the Product Rental community</p>
     </div>
 
-
-
-    <div class="mb-3">
-      <label for="firstname" class="form-label">Firstname </label>
-      <input [(ngModel)]="registerRequest.firstname" type="text" class="form-control" id="firstname" placeholder="firstname" required>
-    </div>
-
-    <div class="mb-3">
-        <label for="lastname" class="form-label">lastname </label>
-        <input [(ngModel)]="registerRequest.lastname" type="text" class="form-control" id="lastname" placeholder="lastname" required>
-    </div>
-
-    <div class="mb-3">
-        <label for="email" class="form-label">email </label>
-        <input [(ngModel)]="registerRequest.email" type="email" class="form-control" id="email" placeholder="email" required>
-    </div>
-
-      <div class="mb-3">
-      <label for="password" class="form-label">Password</label>
-      <input [(ngModel)]="registerRequest.password" type="password" class="form-control" id="password" placeholder="Password" required>
-  <!--authRequest.password var li drna f login.component  -->
-    </div>
-    <div class="d-flex justify-content-between mb-3"> <!--y3ni ay haja wst dev atkon seperated binathom -->
-      <button (click)="register()" type="button" class="btn btn-primary">
-        <em class="fas fa-sign-in-alt">&nbsp;Register</em> <!-- hdi d fontawsam o nbsp ir d space-->
-      </button>
-      <div>
-        Already have an account?&nbsp;
-        <button (click)="login()" type="button" class="btn btn-link">
-          <em class="fas fa-user-plus">&nbsp;Login</em>
-        </button>
+    <!-- Error Messages -->
+    <div class="alert alert-danger fade-in" role="alert" *ngIf="errMsg?.length">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle me-3"></i>
+        <div>
+          <p *ngFor="let msg of errMsg" class="mb-1">{{msg}}</p>
+        </div>
       </div>
     </div>
 
+    <!-- Register Form -->
+    <form class="auth-form" (ngSubmit)="register()">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-4">
+            <label for="firstname" class="form-label">
+              <i class="fas fa-user me-2"></i>
+              First Name
+            </label>
+            <div class="input-group">
+              <input 
+                [(ngModel)]="registerRequest.firstname" 
+                type="text" 
+                class="form-control" 
+                id="firstname" 
+                name="firstname"
+                placeholder="Enter your first name" 
+                required
+                autocomplete="given-name">
+              <span class="input-group-text">
+                <i class="fas fa-user"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="form-group mb-4">
+            <label for="lastname" class="form-label">
+              <i class="fas fa-user me-2"></i>
+              Last Name
+            </label>
+            <div class="input-group">
+              <input 
+                [(ngModel)]="registerRequest.lastname" 
+                type="text" 
+                class="form-control" 
+                id="lastname" 
+                name="lastname"
+                placeholder="Enter your last name" 
+                required
+                autocomplete="family-name">
+              <span class="input-group-text">
+                <i class="fas fa-user"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label for="email" class="form-label">
+          <i class="fas fa-envelope me-2"></i>
+          Email Address
+        </label>
+        <div class="input-group">
+          <input 
+            [(ngModel)]="registerRequest.email" 
+            type="email" 
+            class="form-control" 
+            id="email" 
+            name="email"
+            placeholder="Enter your email address" 
+            required
+            autocomplete="email">
+          <span class="input-group-text">
+            <i class="fas fa-envelope"></i>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label for="password" class="form-label">
+          <i class="fas fa-lock me-2"></i>
+          Password
+        </label>
+        <div class="input-group">
+          <input 
+            [(ngModel)]="registerRequest.password" 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            name="password"
+            placeholder="Create a strong password" 
+            required
+            autocomplete="new-password">
+          <span class="input-group-text">
+            <i class="fas fa-lock"></i>
+          </span>
+        </div>
+        <small class="form-text text-muted">
+          <i class="fas fa-info-circle me-1"></i>
+          Password must be at least 8 characters long
+        </small>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="auth-actions">
+        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+          <i class="fas fa-user-plus me-2"></i>
+          Create Account
+        </button>
+        
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+        
+        <div class="auth-links text-center">
+          <p class="mb-0">
+            Already have an account? 
+            <button type="button" class="btn btn-link p-0 ms-1" (click)="login()">
+              <i class="fas fa-sign-in-alt me-1"></i>
+              Sign In
+            </button>
+          </p>
+        </div>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer text-center mt-4">
+      <small class="text-muted">
+        <i class="fas fa-shield-alt me-1"></i>
+        Your data is protected and secure
+      </small>
+    </div>
   </div>
+</div>

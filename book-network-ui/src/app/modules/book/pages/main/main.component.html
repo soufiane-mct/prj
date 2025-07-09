@@ -1,10 +1,9 @@
-<div class="d-flex flex-column gap-1">
-  
-<app-menu></app-menu>
+<div class="main-container">
+  <!-- Navigation Menu -->
+  <app-menu></app-menu>
 
-<router-outlet></router-outlet>
-
-<div class="pe-2 ps-2">
-
-  </div>
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

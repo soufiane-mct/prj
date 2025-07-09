@@ -52,34 +52,26 @@ export class ManageBookComponent implements OnInit {
   }
 
   saveBook() {
-    console.log('DEBUG: Starting saveBook method');
     this.bookService.saveBook({
       body: this.bookRequest
     }).subscribe({
       next: (bookId) => {
-        console.log('DEBUG: Book saved with ID:', bookId);
         if (this.selectedBookCover) {
-          console.log('DEBUG: About to upload cover for book ID:', bookId);
-          console.log('DEBUG: Selected file:', this.selectedBookCover);
           this.bookService.uploadBookCoverPictureRaw(bookId, this.selectedBookCover)
             .subscribe({
               next: () => {
-                console.log('DEBUG: Cover upload successful');
-                this.router.navigate(['/books/my-books']);
+                this.router.navigate(['/products/my-products']);
               },
               error: (err) => {
-                console.error('Cover upload failed:', err);
                 this.errorMsg = ['Cover upload failed.'];
-                this.router.navigate(['/books/my-books']);
+                this.router.navigate(['/products/my-products']);
               }
             });
         } else {
-          console.log('DEBUG: No cover selected, navigating to my-books');
-          this.router.navigate(['/books/my-books']);
+          this.router.navigate(['/products/my-products']);
         }
       },
       error: (err) => {
-        console.log(err.error);
         this.errorMsg = err.error.validationErrors;
       }
     });
@@ -87,10 +79,8 @@ export class ManageBookComponent implements OnInit {
 
   onFileSelected(event: any) {
     this.selectedBookCover = event.target.files[0];
-    console.log(this.selectedBookCover);
 
     if (this.selectedBookCover) {
-
       const reader = new FileReader();
       reader.onload = () => {
         this.selectedPicture = reader.result as string;

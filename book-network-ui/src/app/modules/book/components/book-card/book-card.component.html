@@ -1,34 +1,108 @@
-<div
-  class="card"
-  style="width: 20rem;"
-  [class.border-success]="book.shareable"
-  [class.border-warning]="book.archived"
->
-  <img height="200" [src]="bookCover" class="card-img-top" alt="...">
-  <div class="card-body overflow-scroll">
-    <h5 class="card-title fs-6 text-nowrap fw-bold mb-1"><i class="fa-solid fa-book"></i>&nbsp;{{book.title}}</h5>
-    <h5 class="card-subtitle fs-6 text-secondary mb-1"><i class="fa-solid fa-user-check"></i>&nbsp;{{ book.authorName }}</h5>
-    <h6 class="card-subtitle fs-6 text-secondary mb-1"><i class="fas fa-code"></i>&nbsp;{{ book.isbn }}</h6>
-    <h6 class="card-subtitle fs-6 text-secondary"><i class="fas fa-user"></i>&nbsp;{{ book.owner }}</h6>
-    <hr>
-    <p class="card-text">{{book.synopsis}}</p>
+<div class="book-card card h-100"
+     [class.border-success]="book.shareable && !book.archived"
+     [class.border-warning]="book.archived"
+     [class.border-secondary]="!book.shareable && !book.archived">
+  
+  <!-- Product Cover Image -->
+  <div class="book-cover-container">
+    <img [src]="bookCover" class="book-cover" alt="Product cover">
+    <div class="book-overlay">
+      <div class="book-actions">
+        <button class="action-btn details-btn" (click)="onShowDetails()" title="View Details">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button class="action-btn borrow-btn" (click)="onBorrow()" title="Rent Product" *ngIf="!manage">
+          <i class="fas fa-hand-holding-heart"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Status Badge -->
+    <div class="status-badge" 
+         [class.status-available]="book.shareable && !book.archived"
+         [class.status-borrowed]="!book.shareable && !book.archived"
+         [class.status-archived]="book.archived">
+      <i class="fas me-1" 
+         [class.fa-check-circle]="book.shareable && !book.archived"
+         [class.fa-clock]="!book.shareable && !book.archived"
+         [class.fa-archive]="book.archived"></i>
+      {{ book.archived ? 'Archived' : (book.shareable ? 'Available' : 'Rented') }}
+    </div>
   </div>
-  <div class="card-footer d-flex gap-2 justify-content-between align-items-center">
-    <div class="d-flex gap-2">
-      <app-rating [rating]="book.rate || 0"></app-rating>
-      <span class="fw-bold" *ngIf="book.rate || 0 > 0">
-        {{book.rate}}
-      </span>
+
+  <!-- Product Content -->
+  <div class="card-body d-flex flex-column">
+    <!-- Product Title -->
+    <h5 class="book-title">
+      <i class="fas fa-tag text-primary me-2"></i>
+      {{book.title}}
+    </h5>
+    
+    <!-- Product Details -->
+    <div class="book-details">
+      <div class="detail-item">
+        <i class="fas fa-dollar-sign text-info"></i>
+        <span class="detail-text">{{ book.authorName }} DH</span>
+      </div>
+      <div class="detail-item">
+        <i class="fas fa-barcode text-success"></i>
+        <span class="detail-text">{{ book.isbn }}</span>
+      </div>
+      <div class="detail-item">
+        <i class="fas fa-user text-success"></i>
+        <span class="detail-text">{{ book.owner }}</span>
+      </div>
     </div>
-    <div class="d-flex gap-2" *ngIf="!manage">
-      <i (click)="onShowDetails()" class="fas fa-circle-info text-primary"></i>
-      <i (click)="onBorrow()" class="fas fa-list-check text-primary"></i>
-      <i (click)="onAddToWaitingList()" class="fas fa-heart text-danger"></i>
+    
+    <!-- Product Description -->
+    <div class="book-synopsis">
+      <p class="synopsis-text">
+        <i class="fas fa-info-circle text-primary me-2"></i>
+        <strong>Product Details:</strong>
+        {{book.synopsis}}
+      </p>
     </div>
-    <div class="d-flex gap-2" *ngIf="manage">
-      <i (click)="onEdit()" class="fas fa-edit text-success"></i>
-      <i (click)="onShare()" class="fas fa-share-nodes text-primary"></i>
-      <i (click)="onArchive()" class="fas fa-archive text-danger"></i>
+    
+    <!-- Rating Section -->
+    <div class="rating-section">
+      <div class="rating-container">
+        <app-rating [rating]="book.rate || 0"></app-rating>
+        <span class="rating-text" *ngIf="book.rate && book.rate > 0">
+          {{book.rate}}/5
+        </span>
+        <span class="no-rating" *ngIf="!book.rate || book.rate === 0">
+          No ratings yet
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Footer -->
+  <div class="card-footer">
+    <div class="footer-actions" *ngIf="!manage">
+      <button class="btn btn-outline-primary btn-sm action-button" (click)="onShowDetails()">
+        <i class="fas fa-info-circle me-1"></i>
+        Details
+      </button>
+      <button class="btn btn-success btn-sm action-button" (click)="onBorrow()">
+        <i class="fas fa-hand-holding-heart me-1"></i>
+        Rent
+      </button>
+    </div>
+    
+    <div class="footer-actions" *ngIf="manage">
+      <button class="btn btn-outline-primary btn-sm action-button" (click)="onEdit()">
+        <i class="fas fa-edit me-1"></i>
+        Edit
+      </button>
+      <button class="btn btn-outline-info btn-sm action-button" (click)="onShare()">
+        <i class="fas fa-share-nodes me-1"></i>
+        Share
+      </button>
+      <button class="btn btn-outline-warning btn-sm action-button" (click)="onArchive()">
+        <i class="fas fa-archive me-1"></i>
+        Archive
+      </button>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-<h2>My returned books</h2>
+<h2>My returned products</h2>
 <hr>
 <div
   *ngIf="message"
@@ -14,9 +14,9 @@
     <thead>
     <tr>
       <th scope="col">#</th>
-      <th scope="col">Title</th>
-      <th scope="col">Author</th>
-      <th scope="col">ISBN</th>
+      <th scope="col">Product Code</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Price</th>
       <th scope="col">Rate</th>
       <th scope="col"><i class="fas fa-cogs"></i></th>
     </tr>
@@ -25,9 +25,9 @@
     <tr
       *ngFor="let book of returnedBooks.content; let index = index">
       <th scope="row">{{ index + 1 }}</th>
+      <td>{{ book.isbn }}</td>
       <td>{{ book.title }}</td>
       <td>{{ book.authorName }}</td>
-      <td>{{ book.isbn }}</td>
       <td><i class="fas fa-star text-warning"></i> {{ book.rate }}</td>
       <td>
         <div class="d-flex gap-2">

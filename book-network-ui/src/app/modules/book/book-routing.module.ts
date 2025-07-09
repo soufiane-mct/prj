@@ -18,15 +18,15 @@ const routes: Routes = [
         component: BookListComponent //dkhl jibha mn pages
       },
       {
-        path: 'my-books',
+        path: 'my-products',
         component: MyBooksComponent 
       },
       {
-        path: 'my-borrowed-books',
+        path: 'my-borrowed-products',
         component: BorrowedBookListComponent 
       },
       {
-        path: 'my-returned-books',
+        path: 'my-returned-products',
         component: ReturnBooksComponent
       },
       {
