@@ -1,5 +1,27 @@
 <h3>My Products list</h3>
 <hr>
+<div class="mb-4 d-flex flex-wrap align-items-end gap-3 bg-light p-3 rounded shadow-sm">
+  <div class="d-flex flex-column">
+    <label for="categoryFilter" class="form-label fw-semibold mb-1">Filter by Category:</label>
+    <select id="categoryFilter" class="form-select stylish-input w-auto min-w-200"
+            [(ngModel)]="selectedCategoryId"
+            (change)="onCategoryChange()">
+      <option [ngValue]="undefined">All Categories</option>
+      <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+    </select>
+  </div>
+  <div class="d-flex flex-column">
+    <label for="searchInput" class="form-label fw-semibold mb-1">Search by Name:</label>
+    <input id="searchInput" type="text" class="form-control stylish-input w-auto min-w-200"
+           [(ngModel)]="searchTerm" placeholder="Enter product name" />
+  </div>
+  <div class="d-flex align-items-end">
+    <button class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" type="button" (click)="onSearch()">
+      <i class="fas fa-filter me-2"></i>
+      Search
+    </button>
+  </div>
+</div>
 <div class="d-flex justify-content-end mb-3">
   <a routerLink="/products/manage" class="btn btn-outline-primary">
     <i class="fas fa-plus"></i>&nbsp;New Product
@@ -7,7 +29,7 @@
 </div>
 <div class="d-flex justify-content-start gap-4 flex-wrap">
   <app-book-card
-    *ngFor="let book of bookResponse.content"
+    *ngFor="let book of filteredBooks"
     [book]="book"
     [manage]="true"
     (archive)="archiveBook($event)"

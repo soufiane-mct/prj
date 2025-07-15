@@ -20,8 +20,7 @@ export const routes: Routes = [
     },
     {
      path: 'products',
-     loadChildren: () => import('./modules/book/book.module').then(m => m.BookModule), //module.BookModule hit shild path dl products
-     canActivate: [authGuard]
+     loadChildren: () => import('./modules/book/book.module').then(m => m.BookModule) //module.BookModule hit shild path dl products
     },
     {
       path: '',

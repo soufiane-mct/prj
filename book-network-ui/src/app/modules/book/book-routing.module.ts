@@ -7,6 +7,7 @@ import { ManageBookComponent } from './pages/manage-book/manage-book.component';
 import { BorrowedBookListComponent } from './pages/borrowed-book-list/borrowed-book-list.component';
 import { ReturnBooksComponent } from './pages/return-books/return-books.component';
 import { BookDetailsComponent } from './pages/book-details/book-details.component';
+import { authGuard } from '../../services/guard/auth.guard';
 
 const routes: Routes = [
   {
@@ -19,15 +20,23 @@ const routes: Routes = [
       },
       {
         path: 'my-products',
-        component: MyBooksComponent 
+        component: MyBooksComponent,
+        canActivate: [authGuard]
       },
       {
         path: 'my-borrowed-products',
-        component: BorrowedBookListComponent 
+        component: BorrowedBookListComponent,
+        canActivate: [authGuard]
       },
       {
         path: 'my-returned-products',
-        component: ReturnBooksComponent
+        component: ReturnBooksComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'guest-rent-requests',
+        loadComponent: () => import('./pages/guest-rent-requests/guest-rent-requests.component').then(m => m.GuestRentRequestsComponent),
+        canActivate: [authGuard]
       },
       {
         path: 'details/:bookId',
@@ -35,11 +44,18 @@ const routes: Routes = [
       },
       {
         path: 'manage',
-        component: ManageBookComponent
+        component: ManageBookComponent,
+        canActivate: [authGuard]
       },
       {
         path: 'manage/:bookId',
-        component: ManageBookComponent 
+        component: ManageBookComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'categories',
+        loadComponent: () => import('./pages/category-management/category-management.component').then(m => m.CategoryManagementComponent),
+        canActivate: [authGuard]
       }
 
     ]

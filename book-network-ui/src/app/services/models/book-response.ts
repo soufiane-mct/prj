@@ -13,4 +13,6 @@ export interface BookResponse {
   shareable?: boolean;
   synopsis?: string;
   title?: string;
+  categoryName?: string;
+  categoryId?: number;
 }

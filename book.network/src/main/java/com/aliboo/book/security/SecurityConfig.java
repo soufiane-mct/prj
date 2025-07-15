@@ -32,20 +32,37 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req->
                         req.requestMatchers(
                                 "/auth/**",
-                                         "/v2/api-docs",
-                                         "/v3/api-docs",
-                                         "/v3/api-docs/**",
-                                         "/swagger-resources",
-                                         "/swagger-resources/**",
-                                         "/configuration/ui",
-                                         "/configuration/security",
-                                         "/swagger-ui/**",
-                                         "/webjars/**",
-                                         "/swagger-ui.html"
-                        ).permitAll()//hna hd request li drna f url "" dkhlhom
-                                .anyRequest()
-                                .authenticated()//hna ayrequest akher dir lih authenticated (y3ni mdkhlosh)
-                        )
+                                "/v2/api-docs",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/swagger-ui/**",
+                                "/webjars/**",
+                                "/swagger-ui.html",
+                                "/books",
+                                "/books/",
+                                "/books/**",
+                                "/categories",
+                                "/categories/",
+                                "/guest-rent",
+                                "/guest-rent/",
+                                "/api/v1/guest-rent",
+                                "/feedbacks",
+                                "/feedbacks/**"
+                        ).permitAll()
+                        .requestMatchers("/categories/**").permitAll()
+                        .requestMatchers("/books").permitAll()
+                        .requestMatchers("/books/").permitAll()
+                        .requestMatchers("/books/**").permitAll()
+                        .requestMatchers("/guest-rent").permitAll()
+                        .requestMatchers("/guest-rent/").permitAll()
+                        .requestMatchers("/feedbacks/**").permitAll()
+                        .anyRequest()
+                        .authenticated()
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //hna fsh user aysift shi request spring ayreacti bhala maerfsh dk request
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);//hna drna filter akher dyalna lihowa jwtAuthFilter (o ydirha 9bl mn UsernamePasswordAuthenticationFilter class)

@@ -2,6 +2,8 @@ import { Component,EventEmitter, Input, Output } from '@angular/core';
 import { BookResponse } from '../../../../services/models/book-response';
 import { CommonModule } from '@angular/common';
 import { RatingComponent } from "../rating/rating.component";
+import { GuestRentModalComponent } from './guest-rent-modal.component';
+import { TokenService } from '../../../../services/token/token.service';
 
 @Component({
   selector: 'app-book-card',
@@ -13,6 +15,8 @@ export class BookCardComponent {
   private _book: BookResponse = {};
   private _manage = false;
   private _bookCover: string | undefined;
+
+  constructor(private tokenService: TokenService) {}
 
   get bookCover(): string | undefined {
     if (this._book.cover) {
@@ -46,6 +50,8 @@ export class BookCardComponent {
   @Output() private borrow: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
   @Output() private edit: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
   @Output() private details: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
+  @Output() guestRent = new EventEmitter<{bookId: number, data: any}>();
+  @Output() guestRentModalOpen = new EventEmitter<{ bookId: number, bookTitle: string }>();
 
   onShare() {
     this.share.emit(this._book);
@@ -56,7 +62,11 @@ export class BookCardComponent {
   }
 
   onBorrow() {
-    this.borrow.emit(this._book);
+    if (!this.tokenService.token) {
+      this.guestRentModalOpen.emit({ bookId: this._book.id!, bookTitle: this._book.title || '' });
+    } else {
+      this.borrow.emit(this._book);
+    }
   }
 
   onEdit() {

@@ -44,6 +44,10 @@ public class Book extends BaseEntity { //l book kiyrit mn baseEntity (ayrit mno 
     @OneToMany(mappedBy = "book")//book var drnaha fl BookTransactionHistory bch ndiro relationship bin BookTransactionHistory o book o drna fiha column f database bookid tahia
     private List<BookTransactionHistory> histories;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @Transient double getRate() {
         if(feedbacks == null || feedbacks.isEmpty()){
             return 0.0;//hit double lamakan ta feed back o kn emty dir lia 0

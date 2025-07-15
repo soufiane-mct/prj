@@ -3,6 +3,7 @@ package com.aliboo.book.user;
 import com.aliboo.book.book.Book;
 import com.aliboo.book.history.BookTransactionHistory;
 import com.aliboo.book.role.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -46,10 +47,12 @@ public class User implements UserDetails, Principal { //Principal ankhdmo biha m
 
     //hna andiro relatioship bin l book o l user (one User ykono endo bzff dl books)
     @OneToMany(mappedBy = "owner") //hit one user to many books drr dirha o l mapping dyalha hia l var owner li dernaha fl book bch rebto relationship bl User ol book
+    @JsonIgnore
     private List<Book> books;
 
     //hna relationship bl user o BookTransactionHistory one user endo bzff transaction historie
     @OneToMany(mappedBy = "user")//user var drnaha fl BookTransactionHistory bch ndiro relationship bin BookTransactionHistory o user o drna fiha column f database userid
+    @JsonIgnore
     private List<BookTransactionHistory> histories;
 
 

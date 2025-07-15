@@ -21,6 +21,7 @@ public record BookRequest(//madrnash class eadia drnaha record o record ra ir ty
               @NotEmpty(message = "103")
               String synopsis,
 
-              boolean shareable
+              boolean shareable,
+              Integer categoryId
 ) {
 }

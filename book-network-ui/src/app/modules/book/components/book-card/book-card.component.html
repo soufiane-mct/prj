@@ -45,12 +45,16 @@
         <span class="detail-text">{{ book.authorName }} DH</span>
       </div>
       <div class="detail-item">
-        <i class="fas fa-barcode text-success"></i>
-        <span class="detail-text">{{ book.isbn }}</span>
+        <i class="fas fa-map-marker-alt text-success"></i>
+        <span class="detail-text"><strong>Location:</strong> {{ book.isbn }}</span>
       </div>
       <div class="detail-item">
         <i class="fas fa-user text-success"></i>
         <span class="detail-text">{{ book.owner }}</span>
+      </div>
+      <div class="detail-item" *ngIf="book.categoryName">
+        <i class="fas fa-layer-group text-warning"></i>
+        <span class="detail-text">{{ book.categoryName }}</span>
       </div>
     </div>
     

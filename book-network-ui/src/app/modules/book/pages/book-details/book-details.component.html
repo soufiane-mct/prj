@@ -1,95 +1,194 @@
-<div class="p-2">
-    <hr>
-    <div class="d-flex gap-2">
-      <div class="col-3">
-        <!-- <img class="rounded-1" width="100%" height="100%" [src]=" 'data:image/jpg;base64,' + book.cover || 'https://source.unsplash.com/user/c_v_r/1900x800'" alt=""> -->
+<div class="book-details-container">
+  <!-- Back Navigation -->
+  <div class="back-navigation">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Products</span>
+    </button>
+  </div>
 
-        <img class="rounded-1" width="100%" height="100%" [src]="book.cover ? 'data:image/jpg;base64,' + book.cover : 'https://source.unsplash.com/user/c_v_r/1900x800'" alt="">
-      </div>
-      <div class="col-9">
-        <h2><i class="fa-solid fa-book"></i>&nbsp;{{ book.title }}</h2>
-        <h4><i class="fa-solid fa-user-check"></i>&nbsp;{{ book.authorName }}</h4>
-        <h5><i class="fas fa-money-bill-wave"></i>&nbsp;{{ book.isbn }}</h5>
-        <h6 class="card-subtitle fs-6 text-secondary"><i class="fas fa-user"></i>&nbsp;{{ book.owner }}</h6>
-        <div class="d-flex gap-2">
-          <app-rating [rating]="book.rate || 0"></app-rating>
-          <span>{{ book.rate }}</span>
-          ({{feedbacks.totalElements || 0}} feedbacks)
-        </div>
-        <hr>
-        <p>
-          {{ book.synopsis }}
-        </p>
-      </div>
-    </div>
-  </div>
-  <div class="d-flex flex-column justify-content-end">
-    <div *ngFor="let feedback of feedbacks.content">
-      <div class="d-flex gap-2">
-        <app-rating [rating]="feedback.note || 0"></app-rating>
-        <strong>{{feedback.note}}</strong>
-      </div>
-      <p>{{feedback.comment}}</p>
-    </div>
-  </div>
-  <div class="d-flex justify-content-center mt-3">
-    <nav aria-label="Page navigation example">
-      <ul class="pagination">
-        <li class="page-item">
-          <a
-            (click)="goToFirstPage()"
-            class="page-link"
-            href="javascript:void(0)"
-            aria-label="Previous"
-            [class.disabled]="page === 0"
-          >
-            <i class="fa-solid fa-angles-left"></i>
-          </a>
-        </li>
-        <li class="page-item">
-          <a
-            (click)="goToPreviousPage()"
-            class="page-link"
-            href="javascript:void(0)"
-            aria-label="Previous"
-            [class.disabled]="page === 0"
-          >
-            <i class="fa-solid fa-angle-left"></i>
-          </a>
-        </li>
-        <li
-          class="page-item"
-          *ngFor="let pageIndex of pages"
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Product Image Section -->
+    <div class="image-section">
+      <div class="image-container">
+        <img 
+          [src]="book.cover ? 'data:image/jpg;base64,' + book.cover : 'https://source.unsplash.com/user/c_v_r/1900x800'" 
+          [alt]="book.title"
+          class="product-image"
         >
-          <a
-            (click)="gotToPage(pageIndex)"
-            class="page-link"
-            [class.active]="page === pageIndex"
-            href="javascript:void(0)"
-          >{{ pageIndex + 1 }}</a>
-        </li>
-        <li class="page-item">
-          <a
-            (click)="goToNextPage()"
-            class="page-link"
-            href="javascript:void(0)"
-            aria-label="Next"
-            [class.disabled]="isLastPage"
-          >
-            <i class="fa-solid fa-chevron-right"></i>
-          </a>
-        </li>
-        <li class="page-item">
-          <a
-            (click)="goToLastPage()"
-            class="page-link"
-            href="javascript:void(0)"
-            aria-label="Next"
-            [class.disabled]="isLastPage"
-          >
-            <i class="fa-solid fa-angles-right"></i>
-          </a>
-        </li>
-      </ul>
-    </nav>
+        <div class="image-overlay">
+          <div class="status-badge" 
+               [class.available]="book.shareable && !book.archived"
+               [class.borrowed]="!book.shareable && !book.archived"
+               [class.archived]="book.archived">
+            <i class="fas" 
+               [class.fa-check-circle]="book.shareable && !book.archived"
+               [class.fa-clock]="!book.shareable && !book.archived"
+               [class.fa-archive]="book.archived"></i>
+            {{ book.archived ? 'Archived' : (book.shareable ? 'Available' : 'Rented') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Information Section -->
+    <div class="info-section">
+      <div class="product-header">
+        <h1 class="product-title">
+          <i class="fas fa-book text-primary"></i>
+          {{ book.title }}
+        </h1>
+        <div class="product-meta">
+          <div class="meta-item">
+            <i class="fas fa-user-check text-info"></i>
+            <span class="meta-label">Author:</span>
+            <span class="meta-value">{{ book.authorName }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-money-bill-wave text-success"></i>
+            <span class="meta-label">Price:</span>
+            <span class="meta-value">{{ book.isbn }} DH</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-user text-warning"></i>
+            <span class="meta-label">Owner:</span>
+            <span class="meta-value">{{ book.owner }}</span>
+          </div>
+          <div class="meta-item" *ngIf="book.categoryName">
+            <i class="fas fa-layer-group text-primary"></i>
+            <span class="meta-label">Category:</span>
+            <span class="meta-value">{{ book.categoryName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating Section -->
+      <div class="rating-section">
+        <div class="rating-container">
+          <app-rating [rating]="book.rate || 0"></app-rating>
+          <div class="rating-info">
+            <span class="rating-score">{{ book.rate || 0 }}/5</span>
+            <span class="rating-count">({{feedbacks.totalElements || 0}} reviews)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Description -->
+      <div class="description-section">
+        <h3 class="section-title">
+          <i class="fas fa-info-circle text-primary"></i>
+          Product Details
+        </h3>
+        <div class="description-content">
+          <p>{{ book.synopsis }}</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-section">
+        <button class="action-btn primary-btn" (click)="onBorrow()" *ngIf="book.shareable && !book.archived">
+          <i class="fas fa-hand-holding-heart"></i>
+          Rent This Product
+        </button>
+        <button class="action-btn secondary-btn" (click)="onShare()">
+          <i class="fas fa-share-nodes"></i>
+          Share Product
+        </button>
+      </div>
+    </div>
   </div>
+
+  <!-- Reviews Section -->
+  <div class="reviews-section">
+    <div class="reviews-header">
+      <h3 class="section-title">
+        <i class="fas fa-star text-warning"></i>
+        Customer Reviews
+        <span class="review-count">({{feedbacks.totalElements || 0}})</span>
+      </h3>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-list" *ngIf="feedbacks.content && feedbacks.content.length > 0">
+      <div class="review-card" *ngFor="let feedback of feedbacks.content">
+        <div class="review-header">
+          <div class="review-rating">
+            <app-rating [rating]="feedback.note || 0"></app-rating>
+            <span class="rating-score">{{feedback.note}}/5</span>
+          </div>
+        </div>
+        <div class="review-content">
+          <p>{{feedback.comment}}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Reviews Message -->
+    <div class="no-reviews" *ngIf="!feedbacks.content || feedbacks.content.length === 0">
+      <div class="no-reviews-content">
+        <i class="fas fa-comment-slash"></i>
+        <h4>No reviews yet</h4>
+        <p>Be the first to review this product!</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="feedbacks.totalElements && feedbacks.totalElements > 0">
+      <nav class="pagination-nav">
+        <ul class="pagination">
+          <li class="page-item">
+            <button
+              (click)="goToFirstPage()"
+              class="page-link"
+              [disabled]="page === 0"
+              [class.disabled]="page === 0"
+            >
+              <i class="fas fa-angles-left"></i>
+            </button>
+          </li>
+          <li class="page-item">
+            <button
+              (click)="goToPreviousPage()"
+              class="page-link"
+              [disabled]="page === 0"
+              [class.disabled]="page === 0"
+            >
+              <i class="fas fa-angle-left"></i>
+            </button>
+          </li>
+          <li
+            class="page-item"
+            *ngFor="let pageIndex of pages"
+          >
+            <button
+              (click)="gotToPage(pageIndex)"
+              class="page-link"
+              [class.active]="page === pageIndex"
+            >{{ pageIndex + 1 }}</button>
+          </li>
+          <li class="page-item">
+            <button
+              (click)="goToNextPage()"
+              class="page-link"
+              [disabled]="isLastPage"
+              [class.disabled]="isLastPage"
+            >
+              <i class="fas fa-angle-right"></i>
+            </button>
+          </li>
+          <li class="page-item">
+            <button
+              (click)="goToLastPage()"
+              class="page-link"
+              [disabled]="isLastPage"
+              [class.disabled]="isLastPage"
+            >
+              <i class="fas fa-angles-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

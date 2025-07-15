@@ -44,10 +44,16 @@ public class FeedbackService {
 
     public PageResponse<FeedbackResponse> findAllFeedbacksByBook(Integer bookId, int page, int size, Authentication connectedUser) {
         Pageable pageable = PageRequest.of(page, size);
-        User user = ((User) connectedUser.getPrincipal());
+        final Integer userId;
+        if (connectedUser != null && connectedUser.getPrincipal() instanceof com.aliboo.book.user.User) {
+            com.aliboo.book.user.User user = (com.aliboo.book.user.User) connectedUser.getPrincipal();
+            userId = user.getId();
+        } else {
+            userId = null;
+        }
         Page<Feedback> feedbacks = feedbackRepository.findAllByBookId(bookId, pageable); //anjibo feedbach ka pages o mn bookid 3antari9 findAllByBookId lidrna f repo
         List<FeedbackResponse> feedbackResponses = feedbacks.stream()
-                .map(f -> feedbackMapper.toFeedbackResponse(f, user.getId()))
+                .map(f -> feedbackMapper.toFeedbackResponse(f, userId))
                 .toList();
 
         return new PageResponse<>(

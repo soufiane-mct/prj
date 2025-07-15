@@ -47,46 +47,24 @@ public class BookService {
 
 
     //fl PageResponse dir lia BookResponse (y3ni anjibo gae l books li kynin o an9smohom ela pages)
-//    public PageResponse<BookResponse> findAllBooks(int page, int size, Authentication connectedUser) {
-//        //hna anjibo user mn connectedUser li drnah fo9 f Authentication
-//        if (connectedUser == null || connectedUser.getPrincipal() == null) {
-//            throw new IllegalArgumentException("Utilisateur non authentifié");
-//        }
-//        User user = ((User) connectedUser.getPrincipal());
-//        //bch n implemiw l pageing mn spring
-//        Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by("createdDate").descending()); //page size var dyalna o rtbhom lia b createdDate li hia var dyalna drnaha fl baseEntity
-//        Page<Book> books = bookRepository.findAllDisplayableBooks((org.springframework.data.domain.Pageable) pageable, user.getId()); //anakhdo alldisplay book li dar lihom l user display o anjibohom mch mantl3ohomsh (Page dspring dir fiha book odrna var books bhl type dyalha Page<Book> ohdshi kml diro f var boohs)
-//        //drna hdshi lfo9 bch njibo all books mn all user exept l connected one drnaha fl findAllDisplayableBooks likyna fl bookRepository
-//        List<BookResponse> bookResponse = books.stream()
-//                .map(bookMapper::toBookResponse)
-//                .toList();  //hdshi kmldiro f var bookResponse
-//        return new PageResponse<>(
-//                bookResponse,
-//                books.getNumber(), //number d page hdo endna fl PageResponse
-//                books.getSize(),
-//                books.getTotalElements(),
-//                books.getTotalPages(),
-//                books.isFirst(),
-//                books.isLast()
-//        );
-//    }
-    //fl PageResponse dir lia BookResponse (y3ni anjibo gae l books li kynin o an9smohom ela pages)
     public PageResponse<BookResponse> findAllBooks(int page, int size, Authentication connectedUser) {
-        //hna anjibo user mn connectedUser li drnah fo9 f Authentication
-        if (connectedUser == null || connectedUser.getPrincipal() == null) {
-            throw new IllegalArgumentException("Utilisateur non authentifié");
+        Integer userId = null;
+        if (connectedUser != null && connectedUser.getPrincipal() != null) {
+            userId = ((User) connectedUser.getPrincipal()).getId();
         }
-        User user = ((User) connectedUser.getPrincipal());
-        //bch n implemiw l pageing mn spring
-        Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by("createdDate").descending()); //page size var dyalna o rtbhom lia b createdDate li hia var dyalna drnaha fl baseEntity
-        Page<Book> books = bookRepository.findAllDisplayableBooks((org.springframework.data.domain.Pageable) pageable, user.getId()); //anakhdo alldisplay book li dar lihom l user display o anjibohom mch mantl3ohomsh (Page dspring dir fiha book odrna var books bhl type dyalha Page<Book> ohdshi kml diro f var boohs)
-        //drna hdshi lfo9 bch njibo all books mn all user exept l connected one drnaha fl findAllDisplayableBooks likyna fl bookRepository
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Book> books;
+        if (userId != null) {
+            books = bookRepository.findAllDisplayableBooks(pageable, userId);
+        } else {
+            books = bookRepository.findAllDisplayableBooksForGuests(pageable);
+        }
         List<BookResponse> bookResponse = books.stream()
                 .map(bookMapper::toBookResponse)
-                .toList();  //hdshi kmldiro f var bookResponse
+                .toList();
         return new PageResponse<>(
                 bookResponse,
-                books.getNumber(), //number d page hdo endna fl PageResponse
+                books.getNumber(),
                 books.getSize(),
                 books.getTotalElements(),
                 books.getTotalPages(),

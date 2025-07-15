@@ -5,10 +5,12 @@ import { Router, RouterModule } from '@angular/router';
 import { BookResponse } from '../../../../services/models/book-response';
 import { BookCardComponent } from "../../components/book-card/book-card.component";
 import { CommonModule } from '@angular/common';
+import { CategoryService, Category } from '../../../../services/services/category.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-my-books',
-  imports: [BookCardComponent,CommonModule,RouterModule],
+  imports: [BookCardComponent, CommonModule, RouterModule, FormsModule],
   templateUrl: './my-books.component.html',
   styleUrl: './my-books.component.scss'
 })
@@ -18,14 +20,21 @@ export class MyBooksComponent implements OnInit {
   page = 0;
   size = 5;
   pages: any = [];
+  categories: Category[] = [];
+  selectedCategoryId: number | undefined;
+  searchTerm: string = '';
 
   constructor(
     private bookService: BookService,
-    private router: Router
+    private router: Router,
+    private categoryService: CategoryService
   ) {
   }
 
   ngOnInit(): void {
+    this.categoryService.getAllCategories().subscribe(categories => {
+      this.categories = categories;
+    });
     this.findAllBooks();
   }
 
@@ -96,5 +105,25 @@ export class MyBooksComponent implements OnInit {
 
   editBook(book: BookResponse) {
     this.router.navigate(['products', 'manage', book.id]);
+  }
+
+  onCategoryChange() {
+    // Triggers filteredBooks getter
+  }
+
+  onSearch() {
+    // Triggers filteredBooks getter
+  }
+
+  get filteredBooks() {
+    let books = this.bookResponse.content || [];
+    if (this.selectedCategoryId) {
+      books = books.filter(book => book.categoryId === this.selectedCategoryId);
+    }
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const term = this.searchTerm.trim().toLowerCase();
+      books = books.filter(book => (book.title || '').toLowerCase().includes(term));
+    }
+    return books;
   }
 }

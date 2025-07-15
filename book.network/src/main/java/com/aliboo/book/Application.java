@@ -2,6 +2,8 @@ package com.aliboo.book;
 
 import com.aliboo.book.role.Role;
 import com.aliboo.book.role.RoleRepository;
+import com.aliboo.book.book.Category;
+import com.aliboo.book.book.CategoryRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +30,45 @@ public class Application {
 			}
 		};
 
+	}
+
+	@Bean
+	public CommandLineRunner categorySeeder(CategoryRepository categoryRepository) {
+		return args -> {
+			String[] defaultCategories = {
+				"Beauty",
+				"Fashion (Men's)",
+				"Fashion (Women's)",
+				"Supermarket",
+				"Telephony",
+				"Home & Office",
+				"Appliances",
+				"Electronics",
+				"Computers & Accessories",
+				"Sports & Outdoors",
+				"Toys & Games",
+				"Automotive",
+				"Books & Stationery",
+				"Health & Personal Care",
+				"Baby Products",
+				"Groceries",
+				"Garden & Outdoors",
+				"Pet Supplies",
+				"Jewelry & Watches",
+				"Shoes & Bags",
+				"Musical Instruments",
+				"Cameras & Photo",
+				"Video Games",
+				"Office Supplies",
+				"Furniture",
+				"DIY & Tools"
+			};
+			for (String name : defaultCategories) {
+				if (!categoryRepository.existsByName(name)) {
+					categoryRepository.save(Category.builder().name(name).build());
+				}
+			}
+		};
 	}
 
 }

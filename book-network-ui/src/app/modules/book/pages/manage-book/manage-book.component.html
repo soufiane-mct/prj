@@ -33,17 +33,24 @@
           </div>
         </div>
         <div class="col-md-6">
-          <label for="isbn" class="form-label">Product Code</label>
+          <label for="isbn" class="form-label">Location</label>
           <div class="input-group stylish-input">
-            <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
             <input [(ngModel)]="bookRequest.isbn" type="text" class="form-control border-0" id="isbn" name="isbn"
-                   placeholder="Enter product code">
+                   placeholder="Enter location">
           </div>
         </div>
         <div class="col-12">
           <label for="synopsis" class="form-label">Product Details</label>
           <textarea [(ngModel)]="bookRequest.synopsis" rows="4" class="form-control stylish-input" id="synopsis" name="synopsis"
                     placeholder="Enter product details"></textarea>
+        </div>
+        <div class="col-12">
+          <label for="category" class="form-label">Category</label>
+          <select [(ngModel)]="bookRequest.categoryId" class="form-select stylish-input" id="category" name="categoryId">
+            <option [ngValue]="null">Select a category</option>
+            <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+          </select>
         </div>
         <div class="col-12">
           <div class="form-check">

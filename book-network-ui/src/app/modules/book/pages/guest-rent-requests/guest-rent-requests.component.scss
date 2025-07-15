@@ -1,0 +1,32 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-weight: 700;
+  color: var(--primary-color, #6366f1);
+}
+
+.table {
+  background: #fff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+}
+
+th, td {
+  vertical-align: middle !important;
+}
+
+.alert-info {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-left: 4px solid #6366f1;
+}
+
+.alert-danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+} 

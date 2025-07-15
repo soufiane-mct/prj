@@ -6,6 +6,9 @@
   border: none;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  height: 600px; // Fixed height for all cards
+  display: flex;
+  flex-direction: column;
   
   &:hover {
     transform: translateY(-8px);
@@ -36,9 +39,10 @@
 // Book cover container
 .book-cover-container {
   position: relative;
-  height: 280px;
+  height: 250px; // Fixed height for cover
   overflow: hidden;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
+  flex-shrink: 0; // Prevent shrinking
 }
 
 .book-cover {
@@ -146,6 +150,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0; // Allow flex shrinking
 }
 
 // Book title
@@ -159,6 +164,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  height: 3.25rem; // Fixed height for 2 lines
   
   i {
     color: var(--primary-color);
@@ -168,6 +175,7 @@
 // Book details
 .book-details {
   margin-bottom: 1rem;
+  flex-shrink: 0; // Prevent shrinking
 }
 
 .detail-item {
@@ -179,12 +187,16 @@
     width: 20px;
     margin-right: 0.75rem;
     font-size: 0.9rem;
+    flex-shrink: 0; // Prevent icon shrinking
   }
   
   .detail-text {
     font-size: 0.9rem;
     color: var(--secondary-color);
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -192,6 +204,7 @@
 .book-synopsis {
   margin-bottom: 1rem;
   flex: 1;
+  min-height: 0; // Allow flex shrinking
 }
 
 .synopsis-text {
@@ -203,11 +216,13 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
+  height: 3.9375rem; // Fixed height for 3 lines (0.875rem * 1.5 * 3)
 }
 
 // Rating section
 .rating-section {
   margin-top: auto;
+  flex-shrink: 0; // Prevent shrinking
 }
 
 .rating-container {
@@ -233,6 +248,7 @@
   background: transparent;
   border-top: 1px solid #e2e8f0;
   padding: 1rem 1.5rem;
+  flex-shrink: 0; // Prevent shrinking
 }
 
 .footer-actions {
@@ -309,12 +325,21 @@
 
 // Responsive design
 @media (max-width: 768px) {
+  .book-card {
+    height: 550px; // Slightly smaller on tablets
+  }
+  
   .book-cover-container {
-    height: 220px;
+    height: 200px;
   }
   
   .book-title {
     font-size: 1.1rem;
+    height: 2.86rem; // Adjusted for smaller font
+  }
+  
+  .synopsis-text {
+    height: 3.375rem; // Adjusted for smaller font
   }
   
   .action-btn {
@@ -336,8 +361,12 @@
 }
 
 @media (max-width: 576px) {
+  .book-card {
+    height: 500px; // Even smaller on mobile
+  }
+  
   .book-cover-container {
-    height: 200px;
+    height: 180px;
   }
   
   .card-body {
@@ -346,6 +375,15 @@
   
   .card-footer {
     padding: 1rem;
+  }
+  
+  .book-title {
+    font-size: 1rem;
+    height: 2.6rem; // Adjusted for smaller font
+  }
+  
+  .synopsis-text {
+    height: 3rem; // Adjusted for smaller font
   }
   
   .book-actions {

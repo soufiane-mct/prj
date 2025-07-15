@@ -1,0 +1,35 @@
+<div class="container py-4">
+  <h2>Category Management</h2>
+  <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+  <form class="d-flex mb-3" (ngSubmit)="addCategory()">
+    <input [(ngModel)]="newCategoryName" name="newCategoryName" class="form-control me-2" placeholder="New category name" required />
+    <button class="btn btn-primary" type="submit">Add</button>
+  </form>
+  <table class="table table-bordered" *ngIf="categories.length > 0">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th style="width: 180px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let category of categories">
+        <td *ngIf="editCategoryId !== category.id">{{ category.name }}</td>
+        <td *ngIf="editCategoryId === category.id">
+          <input [(ngModel)]="editCategoryName" name="editCategoryName" class="form-control" required />
+        </td>
+        <td>
+          <ng-container *ngIf="editCategoryId !== category.id; else editActions">
+            <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(category)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(category.id)">Delete</button>
+          </ng-container>
+          <ng-template #editActions>
+            <button class="btn btn-sm btn-success me-2" (click)="saveEdit()">Save</button>
+            <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="categories.length === 0" class="alert alert-info">No categories found. Add a new category above.</div>
+</div> 

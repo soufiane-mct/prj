@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg fixed-top">
   <div class="container-fluid px-4">
-    <a class="navbar-brand d-flex align-items-center" href="javascript:void(0)">
+    <a class="navbar-brand d-flex align-items-center" routerLink="/products">
       <i class="fas fa-box-open me-2"></i>
       <span class="brand-text">Product Rental</span>
     </a>
@@ -11,41 +11,36 @@
     
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center" aria-current="page" routerLink="/products" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-            <i class="fas fa-home me-2"></i>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
+        <!-- Authenticated User Only Menu Items -->
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link d-flex align-items-center" routerLink="/products/my-products" routerLinkActive="active">
             <i class="fas fa-box me-2"></i>
             <span>My Products</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link d-flex align-items-center" routerLink="/products/my-returned-products" routerLinkActive="active">
             <i class="fa-solid fa-truck-fast me-2"></i>
             <span>My Returned Products</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link d-flex align-items-center" routerLink="/products/my-borrowed-products" routerLinkActive="active">
             <i class="fas fa-list-check me-2"></i>
             <span>Borrowed Products</span>
           </a>
         </li>
+        <li class="nav-item" *ngIf="isAuthenticated">
+          <a class="nav-link d-flex align-items-center" routerLink="/products/guest-rent-requests" routerLinkActive="active">
+            <i class="fas fa-user-friends me-2"></i>
+            <span>Guest Rent Requests</span>
+          </a>
+        </li>
       </ul>
       
       <div class="d-flex gap-3 align-items-center">
-        <div class="search-container position-relative">
-          <input class="form-control search-input" type="search" placeholder="Find a product..." aria-label="Search">
-          <button class="btn btn-outline-primary search-btn" type="button">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-        
-        <div class="user-info d-flex align-items-center gap-2">
+        <!-- Authenticated User Actions -->
+        <div class="user-info d-flex align-items-center gap-2" *ngIf="isAuthenticated">
           <div class="user-avatar">
             <i class="fas fa-user-circle fa-2x text-primary"></i>
           </div>

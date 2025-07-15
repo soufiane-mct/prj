@@ -9,4 +9,5 @@ export interface BookRequest {
   shareable?: boolean;
   synopsis: string;
   title: string;
+  categoryId?: number;
 }

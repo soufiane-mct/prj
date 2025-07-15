@@ -4,6 +4,7 @@ import { BookService } from '../../../../services/services/book.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CategoryService, Category } from '../../../../services/services/category.service';
 
 @Component({
   selector: 'app-manage-book',
@@ -22,15 +23,20 @@ export class ManageBookComponent implements OnInit {
   };
   selectedBookCover: any;
   selectedPicture: string | undefined;
+  categories: Category[] = [];
 
   constructor(
     private bookService: BookService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private categoryService: CategoryService
   ) {
   }
 
   ngOnInit(): void {
+    this.categoryService.getAllCategories().subscribe(categories => {
+      this.categories = categories;
+    });
     const bookId = this.activatedRoute.snapshot.params['bookId'];
     if (bookId) {
       this.bookService.findBookById({
@@ -43,7 +49,8 @@ export class ManageBookComponent implements OnInit {
            authorName: book.authorName as string,
            isbn: book.isbn as string,
            synopsis: book.synopsis as string,
-           shareable: book.shareable
+           shareable: book.shareable,
+           categoryId: book.categoryId
          };
          this.selectedPicture='data:image/jpg;base64,' + book.cover;
         }
