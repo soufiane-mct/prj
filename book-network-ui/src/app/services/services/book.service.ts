@@ -358,6 +358,10 @@ export class BookService extends BaseService {
     return this.http.post(`${this.rootUrl}/books/cover/${bookId}`, formData);
   }
 
+  deleteBook(params: { 'book-id': number }): Observable<void> {
+    return this.http.delete<void>(`${this.rootUrl}/books/${params['book-id']}`);
+  }
+
   getOwnerGuestRentRequests() {
     return this.http.get<any[]>('/api/v1/guest-rent/owner');
   }

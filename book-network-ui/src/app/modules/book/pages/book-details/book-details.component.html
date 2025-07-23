@@ -1,10 +1,23 @@
+<div class="success-notification" *ngIf="showSuccessNotification">
+  <div class="notification-content">
+    <div class="notification-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="notification-text">
+      {{ successMessage }}
+    </div>
+    <button class="notification-close" (click)="showSuccessNotification = false">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
 <div class="book-details-container">
   <!-- Back Navigation -->
   <div class="back-navigation">
-    <button class="back-btn" (click)="goBack()">
+    <a class="back-btn" href="/products/">
       <i class="fas fa-arrow-left"></i>
       <span>Back to Products</span>
-    </button>
+    </a>
   </div>
 
   <!-- Main Content -->
@@ -41,14 +54,9 @@
         </h1>
         <div class="product-meta">
           <div class="meta-item">
-            <i class="fas fa-user-check text-info"></i>
-            <span class="meta-label">Author:</span>
-            <span class="meta-value">{{ book.authorName }}</span>
-          </div>
-          <div class="meta-item">
             <i class="fas fa-money-bill-wave text-success"></i>
             <span class="meta-label">Price:</span>
-            <span class="meta-value">{{ book.isbn }} DH</span>
+            <span class="meta-value">{{ book.authorName }} DH</span>
           </div>
           <div class="meta-item">
             <i class="fas fa-user text-warning"></i>
@@ -99,6 +107,13 @@
     </div>
   </div>
 
+  <app-guest-rent-modal
+    [show]="guestModalVisible"
+    [bookTitle]="guestModalBookTitle"
+    (close)="onGuestRentModalClose()"
+    (save)="onGuestRentModalSave($event)">
+  </app-guest-rent-modal>
+
   <!-- Reviews Section -->
   <div class="reviews-section">
     <div class="reviews-header">
@@ -114,7 +129,7 @@
       <div class="review-card" *ngFor="let feedback of feedbacks.content">
         <div class="review-header">
           <div class="review-rating">
-            <app-rating [rating]="feedback.note || 0"></app-rating>
+        <app-rating [rating]="feedback.note || 0"></app-rating>
             <span class="rating-score">{{feedback.note}}/5</span>
           </div>
         </div>
@@ -130,65 +145,65 @@
         <i class="fas fa-comment-slash"></i>
         <h4>No reviews yet</h4>
         <p>Be the first to review this product!</p>
-      </div>
     </div>
+  </div>
 
     <!-- Pagination -->
     <div class="pagination-section" *ngIf="feedbacks.totalElements && feedbacks.totalElements > 0">
       <nav class="pagination-nav">
-        <ul class="pagination">
-          <li class="page-item">
+      <ul class="pagination">
+        <li class="page-item">
             <button
-              (click)="goToFirstPage()"
-              class="page-link"
+            (click)="goToFirstPage()"
+            class="page-link"
               [disabled]="page === 0"
-              [class.disabled]="page === 0"
-            >
+            [class.disabled]="page === 0"
+          >
               <i class="fas fa-angles-left"></i>
             </button>
-          </li>
-          <li class="page-item">
+        </li>
+        <li class="page-item">
             <button
-              (click)="goToPreviousPage()"
-              class="page-link"
+            (click)="goToPreviousPage()"
+            class="page-link"
               [disabled]="page === 0"
-              [class.disabled]="page === 0"
-            >
+            [class.disabled]="page === 0"
+          >
               <i class="fas fa-angle-left"></i>
             </button>
-          </li>
-          <li
-            class="page-item"
-            *ngFor="let pageIndex of pages"
-          >
+        </li>
+        <li
+          class="page-item"
+          *ngFor="let pageIndex of pages"
+        >
             <button
-              (click)="gotToPage(pageIndex)"
-              class="page-link"
-              [class.active]="page === pageIndex"
+            (click)="gotToPage(pageIndex)"
+            class="page-link"
+            [class.active]="page === pageIndex"
             >{{ pageIndex + 1 }}</button>
-          </li>
-          <li class="page-item">
+        </li>
+        <li class="page-item">
             <button
-              (click)="goToNextPage()"
-              class="page-link"
+            (click)="goToNextPage()"
+            class="page-link"
               [disabled]="isLastPage"
-              [class.disabled]="isLastPage"
-            >
+            [class.disabled]="isLastPage"
+          >
               <i class="fas fa-angle-right"></i>
             </button>
-          </li>
-          <li class="page-item">
+        </li>
+        <li class="page-item">
             <button
-              (click)="goToLastPage()"
-              class="page-link"
+            (click)="goToLastPage()"
+            class="page-link"
               [disabled]="isLastPage"
-              [class.disabled]="isLastPage"
-            >
+            [class.disabled]="isLastPage"
+          >
               <i class="fas fa-angles-right"></i>
             </button>
-          </li>
-        </ul>
-      </nav>
+        </li>
+      </ul>
+    </nav>
     </div>
   </div>
-</div>
+  </div>

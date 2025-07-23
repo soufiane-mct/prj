@@ -154,5 +154,14 @@ public class BookController {
         }
     }
 
+    @DeleteMapping("/{book-id}")
+    public ResponseEntity<Void> deleteBook(
+            @PathVariable("book-id") Integer bookId,
+            Authentication connectedUser
+    ) {
+        service.deleteBook(bookId, connectedUser);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 

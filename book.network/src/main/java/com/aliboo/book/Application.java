@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+
 @SpringBootApplication
 @EnableJpaAuditing(auditorAwareRef = "auditorAware") //hdi drr dirha bsh tkhdm b @EntityListeners(AuditingEntityListener.class) o bch tkhdm b @CreatedDate...
 //auditorAware hada bean dyalna drnaf fl config drna fih ApplicationAuditAware li drrna fiha l auth l user bch nearfo who did what (3antari9 user) o dernaha hna bch y3rf l Auditing li ankhdmo biha hit f lwl kna dayrin a EnableJpaAuditing

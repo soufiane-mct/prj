@@ -23,6 +23,8 @@ export class MyBooksComponent implements OnInit {
   categories: Category[] = [];
   selectedCategoryId: number | undefined;
   searchTerm: string = '';
+  showSuccessNotification = false;
+  successMessage = '';
 
   constructor(
     private bookService: BookService,
@@ -105,6 +107,63 @@ export class MyBooksComponent implements OnInit {
 
   editBook(book: BookResponse) {
     this.router.navigate(['products', 'manage', book.id]);
+  }
+
+  errorMessage: string = '';
+  showErrorNotification: boolean = false;
+
+  showDeleteModal: boolean = false;
+  bookToDelete: BookResponse | null = null;
+
+  openDeleteModal(book: BookResponse) {
+    this.bookToDelete = book;
+    this.showDeleteModal = true;
+  }
+
+  confirmDelete() {
+    if (!this.bookToDelete) return;
+    this.bookService.deleteBook({ 'book-id': this.bookToDelete.id as number }).subscribe({
+      next: () => {
+        this.showSuccessNotificationMessage('Product deleted successfully!');
+        this.findAllBooks();
+      },
+      error: (err) => {
+        let msg = 'Unable to delete product. Please try again.';
+        if (err.error && err.error.error) {
+          msg = err.error.error;
+        } else if (err.error && err.error.message) {
+          msg = err.error.message;
+        } else if (err.message) {
+          msg = err.message;
+        }
+        this.showErrorNotificationMessage(msg);
+      },
+      complete: () => {
+        this.showDeleteModal = false;
+        this.bookToDelete = null;
+      }
+    });
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.bookToDelete = null;
+  }
+
+  showErrorNotificationMessage(message: string) {
+    this.errorMessage = message;
+    this.showErrorNotification = true;
+    setTimeout(() => {
+      this.showErrorNotification = false;
+    }, 4000);
+  }
+
+  showSuccessNotificationMessage(message: string) {
+    this.successMessage = message;
+    this.showSuccessNotification = true;
+    setTimeout(() => {
+      this.showSuccessNotification = false;
+    }, 4000);
   }
 
   onCategoryChange() {

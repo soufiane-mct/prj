@@ -50,6 +50,7 @@ export class BookCardComponent {
   @Output() private borrow: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
   @Output() private edit: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
   @Output() private details: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
+  @Output() private delete: EventEmitter<BookResponse> = new EventEmitter<BookResponse>();
   @Output() guestRent = new EventEmitter<{bookId: number, data: any}>();
   @Output() guestRentModalOpen = new EventEmitter<{ bookId: number, bookTitle: string }>();
 
@@ -75,5 +76,9 @@ export class BookCardComponent {
 
   onShowDetails() {
     this.details.emit(this._book);
+  }
+
+  onDelete() {
+    this.delete.emit(this._book);
   }
 }

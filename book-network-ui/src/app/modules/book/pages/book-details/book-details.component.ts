@@ -7,10 +7,12 @@ import { FeedbackService } from '../../../../services/services/feedback.service'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RatingComponent } from '../../components/rating/rating.component';
+import { TokenService } from '../../../../services/token/token.service';
+import { GuestRentModalComponent } from '../../components/book-card/guest-rent-modal.component';
 
 @Component({
   selector: 'app-book-details',
-  imports: [CommonModule, FormsModule,RouterModule, RatingComponent],
+  imports: [CommonModule, FormsModule,RouterModule, RatingComponent, GuestRentModalComponent],
   templateUrl: './book-details.component.html',
   styleUrl: './book-details.component.scss'
 })
@@ -21,12 +23,17 @@ export class BookDetailsComponent implements OnInit {
   size = 5;
   pages: any = [];
   private bookId = 0;
+  guestModalVisible = false;
+  guestModalBookTitle = '';
+  showSuccessNotification = false;
+  successMessage = '';
 
   constructor(
     private bookService: BookService,
     private feedbackService: FeedbackService,
     private activatedRoute: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private tokenService: TokenService
   ) {
   }
   
@@ -83,9 +90,47 @@ export class BookDetailsComponent implements OnInit {
   }
 
   onBorrow() {
-    // Implement borrow functionality
-    console.log('Borrowing book:', this.book.title);
-    // You can add navigation to borrow page or show a modal
+    if (!this.tokenService.token) {
+      this.guestModalVisible = true;
+      this.guestModalBookTitle = this.book.title || '';
+      return;
+    }
+    if (!this.bookId) return;
+    this.bookService.borrowBook({ 'book-id': this.bookId }).subscribe({
+      next: () => {
+        this.showSuccessNotificationMessage('Book successfully added to your list');
+      },
+      error: (err) => {
+        let msg = 'Unable to borrow book. Please try again.';
+        if (err.error && err.error.error) {
+          msg = err.error.error;
+        } else if (err.error && err.error.message) {
+          msg = err.error.message;
+        } else if (err.message) {
+          msg = err.message;
+        }
+        this.showSuccessNotificationMessage(msg);
+      }
+    });
+  }
+
+  onGuestRentModalClose() {
+    this.guestModalVisible = false;
+    this.guestModalBookTitle = '';
+  }
+
+  showSuccessNotificationMessage(message: string) {
+    this.successMessage = message;
+    this.showSuccessNotification = true;
+    setTimeout(() => {
+      this.showSuccessNotification = false;
+    }, 4000);
+  }
+
+  onGuestRentModalSave(data: any) {
+    // You may need to adjust the API endpoint and payload as in the book-list
+    this.onGuestRentModalClose();
+    this.showSuccessNotificationMessage('Your rent request has been sent!');
   }
 
   onShare() {

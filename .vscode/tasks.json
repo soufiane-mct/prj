@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Maven Reload Project",
+			"command": "mvn clean install",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			],
+			"args": []
+		}
+	]
+}

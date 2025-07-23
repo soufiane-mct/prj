@@ -263,4 +263,13 @@ public class BookService {
         return bookRepository.findById(bookId).orElse(null);
     }
 
+    public void deleteBook(Integer bookId, Authentication connectedUser) {
+        Book book = bookRepository.findById(bookId)
+            .orElseThrow(() -> new EntityNotFoundException("No book found with the ID::" + bookId));
+        User user = ((User) connectedUser.getPrincipal());
+        if (!Objects.equals(book.getOwner().getId(), user.getId())) {
+            throw new OperationNotPermitedException("You cannot delete others' books");
+        }
+        bookRepository.deleteById(bookId);
+    }
 }

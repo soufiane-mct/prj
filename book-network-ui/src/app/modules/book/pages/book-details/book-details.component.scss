@@ -575,3 +575,76 @@
     gap: 0.5rem;
   }
 }
+
+/* Notification Styles (copied from products page) */
+.success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  animation: slideInRight 0.5s ease-out;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.15);
+  padding: 1.25rem 2rem 1.25rem 1.5rem;
+  gap: 1.25rem;
+  min-width: 320px;
+  max-width: 400px;
+  border-left: 4px solid #10b981;
+  position: relative;
+}
+
+.notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.notification-text {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #065f46;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: #065f46;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.notification-close:hover {
+  background: #d1fae5;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

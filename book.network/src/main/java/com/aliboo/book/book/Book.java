@@ -1,3 +1,4 @@
+
 package com.aliboo.book.book;
 
 import com.aliboo.book.common.BaseEntity;
@@ -38,11 +39,15 @@ public class Book extends BaseEntity { //l book kiyrit mn baseEntity (ayrit mno 
     private User owner;
 
     //hna andiro relatioship bin l book o l feedback hna l3ks li lfo9(one book endo bzff d feedback)
-    @OneToMany(mappedBy = "book")//book var drnaha fl feedback bch ndiro relationship bin feedback o book o drna fiha column f database bookid
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true) // Automatically remove feedbacks when book is deleted
     private List<Feedback> feedbacks;
 
-    @OneToMany(mappedBy = "book")//book var drnaha fl BookTransactionHistory bch ndiro relationship bin BookTransactionHistory o book o drna fiha column f database bookid tahia
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true) // Automatically remove histories when book is deleted
     private List<BookTransactionHistory> histories;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE, orphanRemoval = true) // Automatically remove guest rent requests when book is deleted
+    private List<GuestRentRequest> guestRentRequests;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
