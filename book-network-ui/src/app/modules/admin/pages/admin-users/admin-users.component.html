@@ -1,0 +1,153 @@
+<div class="admin-users">
+  <div class="page-header">
+    <h1>User Management</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="refreshUsers()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+      <button class="btn btn-secondary" (click)="exportUsers()">
+        <i class="fas fa-download"></i> Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="statusFilter">Status Filter:</label>
+      <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onFilterChange()" class="form-control">
+        <option value="">All Users</option>
+        <option value="pending">Pending Approval</option>
+        <option value="active">Active</option>
+        <option value="blocked">Blocked</option>
+        <option value="unverified">Unverified</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="searchQuery">Search:</label>
+      <input 
+        type="text" 
+        id="searchQuery" 
+        [(ngModel)]="searchQuery" 
+        (keyup)="onSearchChange()" 
+        placeholder="Search by name or email..." 
+        class="form-control">
+    </div>
+
+    <div class="filter-group">
+      <label for="pageSize">Page Size:</label>
+      <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-control">
+        <option value="10">10 per page</option>
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Users Table -->
+  <div class="users-table-container">
+    <div class="table-header">
+      <h2>All Users</h2>
+      <div class="table-info" *ngIf="!loading">
+        Showing {{ users.length }} of {{ totalElements }} users
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading users...
+    </div>
+
+    <div *ngIf="!loading && users.length === 0" class="no-data">
+      <i class="fas fa-users"></i>
+      <p>No users found</p>
+    </div>
+
+    <div *ngIf="!loading && users.length > 0" class="users-table">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users" class="user-row">
+              <td>
+                <div class="user-info">
+                  <strong>{{ user.firstname }} {{ user.lastname }}</strong>
+                  <small class="text-muted d-block">ID: {{ user.id }}</small>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(user.status)">
+                  {{ user.status }}
+                </span>
+                <div class="verification-status">
+                  <small [ngClass]="user.enabled ? 'text-success' : 'text-warning'">
+                    {{ user.enabled ? 'Email Verified' : 'Email Not Verified' }}
+                  </small>
+                </div>
+              </td>
+              <td>
+                <div>{{ user.createdDate | date:'short' }}</div>
+                <small class="text-muted">Modified: {{ user.lastModifiedDate | date:'short' }}</small>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button 
+                    *ngIf="getUserActions(user).includes('approve')"
+                    class="btn btn-success btn-sm" 
+                    (click)="approveUser(user.id)">
+                    <i class="fas fa-check"></i> Approve
+                  </button>
+                  <button 
+                    *ngIf="getUserActions(user).includes('reject')"
+                    class="btn btn-warning btn-sm" 
+                    (click)="rejectUser(user.id)">
+                    <i class="fas fa-ban"></i> Block
+                  </button>
+                  <button 
+                    class="btn btn-danger btn-sm" 
+                    (click)="deleteUser(user.id)">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Page {{ currentPage + 1 }} of {{ totalPages }} ({{ totalElements }} total users)
+      </div>
+      <div class="pagination-controls">
+        <button 
+          class="btn btn-outline-primary" 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 0">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button 
+          class="btn btn-outline-primary" 
+          (click)="nextPage()" 
+          [disabled]="currentPage >= totalPages - 1">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

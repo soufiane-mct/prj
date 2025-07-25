@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,10 +28,7 @@ public class BeansConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider(){//AuthenticationProvider interface fiha bzf mnha DaoAuthenticationProvider li ktmnkna nkhdmo b passencoder... o userdetails li hia interface thia o fiha load by username...
-        DaoAuthenticationProvider authprovider = new DaoAuthenticationProvider(); //hna dao drnaha f var bsh nkhrjo mnha ltht l function libaghyin
-        authprovider.setUserDetailsService(userDetailsService);
-        authprovider.setPasswordEncoder(passwordEncoder());
-        return authprovider;
+        return new CustomAuthenticationProvider(userDetailsService, passwordEncoder()); //hna dao drnaha f var bsh nkhrjo mnha ltht l function libaghyin
     }
 
     @Bean

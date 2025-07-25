@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .filter-group label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .users-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h2 {
+            color: #333;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .users-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .user-row {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr 2fr;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .user-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .user-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .user-info p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-unverified {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+        
+        .user-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .pagination {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+        
+        .pagination-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .user-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>User Management</h1>
+        <div class="nav-links">
+            <a href="/admin-panel/dashboard">Dashboard</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="filters">
+            <div class="filter-group">
+                <label>Status Filter:</label>
+                <select id="statusFilter" onchange="filterUsers()">
+                    <option value="">All Users</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="active">Active</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="unverified">Unverified</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="searchUsers()">
+            </div>
+            
+            <div class="filter-group">
+                <label>Page Size:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()">
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="users-table">
+            <div class="table-header">
+                <h2>All Users</h2>
+                <div class="table-actions">
+                    <button class="btn btn-primary" onclick="refreshUsers()">Refresh</button>
+                    <button class="btn btn-primary" onclick="exportUsers()">Export</button>
+                </div>
+            </div>
+            
+            <div id="usersContent" class="loading">Loading users...</div>
+            
+            <div class="pagination" id="paginationSection" style="display: none;">
+                <div class="pagination-info" id="paginationInfo"></div>
+                <div class="pagination-controls">
+                    <button class="btn btn-primary" id="prevBtn" onclick="previousPage()" disabled>Previous</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextPage()" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 0;
+        let pageSize = 10;
+        let totalPages = 0;
+        let currentFilter = '';
+        let currentSearch = '';
+        
+        // Check authentication
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            window.location.href = '/admin-panel/login';
+        }
+        
+        // API helper
+        async function apiCall(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            };
+            
+            try {
+                const response = await fetch(url, { ...options, ...defaultOptions });
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+                return response;
+            } catch (error) {
+                console.error('API call failed:', error);
+                return null;
+            }
+        }
+        
+        // Load users
+        async function loadUsers() {
+            const usersContent = document.getElementById('usersContent');
+            usersContent.innerHTML = '<div class="loading">Loading users...</div>';
+            
+            try {
+                let url = `/admin/users?page=${currentPage}&size=${pageSize}`;
+                
+                // Add filters
+                if (currentFilter === 'pending') {
+                    url = `/admin/users/pending?page=${currentPage}&size=${pageSize}`;
+                }
+                
+                const response = await apiCall(url);
+                if (response && response.ok) {
+                    const data = await response.json();
+                    displayUsers(data.content || []);
+                    updatePagination(data);
+                } else {
+                    usersContent.innerHTML = '<div class="error">Failed to load users. Please try again.</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                usersContent.innerHTML = '<div class="error">Failed to load users. Please try again.</div>';
+            }
+        }
+        
+        // Display users
+        function displayUsers(users) {
+            const usersContent = document.getElementById('usersContent');
+            
+            if (users.length === 0) {
+                usersContent.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">No users found</div>';
+                return;
+            }
+            
+            usersContent.innerHTML = `
+                <div class="users-list">
+                    ${users.map(user => `
+                        <div class="user-row">
+                            <div class="user-info">
+                                <h4>${user.firstname} ${user.lastname}</h4>
+                                <p>${user.email}</p>
+                            </div>
+                            <div class="user-info">
+                                <p>Created: ${new Date(user.createdDate).toLocaleDateString()}</p>
+                                <p>Modified: ${new Date(user.lastModifiedDate).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <span class="status-badge ${getStatusClass(user.status)}">${user.status}</span>
+                            </div>
+                            <div>
+                                ${user.enabled ? 'Verified' : 'Unverified'}
+                            </div>
+                            <div class="user-actions">
+                                ${getUserActions(user)}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Get status CSS class
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Active': return 'status-active';
+                case 'Pending Admin Approval': return 'status-pending';
+                case 'Email Not Verified': return 'status-unverified';
+                default: return 'status-blocked';
+            }
+        }
+        
+        // Get user actions based on status
+        function getUserActions(user) {
+            let actions = [];
+            
+            if (user.accountLocked && user.enabled) {
+                actions.push(`<button class="btn btn-success" onclick="approveUser(${user.id})">Approve</button>`);
+            }
+            
+            if (!user.accountLocked && user.enabled) {
+                actions.push(`<button class="btn btn-danger" onclick="blockUser(${user.id})">Block</button>`);
+            }
+            
+            actions.push(`<button class="btn btn-danger" onclick="deleteUser(${user.id})">Delete</button>`);
+            
+            return actions.join('');
+        }
+        
+        // Update pagination
+        function updatePagination(data) {
+            const paginationSection = document.getElementById('paginationSection');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            totalPages = data.totalPages || 0;
+            
+            if (totalPages > 1) {
+                paginationSection.style.display = 'flex';
+                paginationInfo.textContent = `Page ${currentPage + 1} of ${totalPages} (${data.totalElements || 0} total users)`;
+                
+                prevBtn.disabled = currentPage === 0;
+                nextBtn.disabled = currentPage >= totalPages - 1;
+            } else {
+                paginationSection.style.display = 'none';
+            }
+        }
+        
+        // User actions
+        async function approveUser(userId) {
+            const response = await apiCall(`/admin/users/${userId}/approve`, { method: 'POST' });
+            if (response && response.ok) {
+                alert('User approved successfully!');
+                loadUsers();
+            } else {
+                alert('Failed to approve user.');
+            }
+        }
+        
+        async function blockUser(userId) {
+            if (confirm('Are you sure you want to block this user?')) {
+                const response = await apiCall(`/admin/users/${userId}/reject`, { method: 'POST' });
+                if (response && response.ok) {
+                    alert('User blocked successfully!');
+                    loadUsers();
+                } else {
+                    alert('Failed to block user.');
+                }
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+                const response = await apiCall(`/admin/users/${userId}`, { method: 'DELETE' });
+                if (response && response.ok) {
+                    alert('User deleted successfully!');
+                    loadUsers();
+                } else {
+                    alert('Failed to delete user.');
+                }
+            }
+        }
+        
+        // Pagination controls
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                loadUsers();
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                loadUsers();
+            }
+        }
+        
+        // Filter and search
+        function filterUsers() {
+            currentFilter = document.getElementById('statusFilter').value;
+            currentPage = 0;
+            loadUsers();
+        }
+        
+        function searchUsers() {
+            currentSearch = document.getElementById('searchInput').value;
+            currentPage = 0;
+            // Implement search functionality
+            loadUsers();
+        }
+        
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+            currentPage = 0;
+            loadUsers();
+        }
+        
+        // Utility functions
+        function refreshUsers() {
+            loadUsers();
+        }
+        
+        function exportUsers() {
+            alert('Export functionality coming soon!');
+        }
+        
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin-panel/login';
+        }
+        
+        // Load users when page loads
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>

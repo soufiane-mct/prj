@@ -127,6 +127,7 @@ public class AuthenticationService {
         var user = userRepository.findById(savedToken.getUser().getId())//jib lina user mn database 3an tari9 token
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setEnabled(true);
+        user.setAccountLocked(true); // Lock account until admin approval
         userRepository.save(user);
         savedToken.setValidateAt(LocalDateTime.now());
         tokenRepository.save(savedToken);

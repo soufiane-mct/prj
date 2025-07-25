@@ -47,6 +47,9 @@
           <div class="user-details d-none d-md-block">
             <div class="welcome-text text-muted small">Welcome</div>
           </div>
+          <button *ngIf="isAdmin" class="btn btn-outline-primary ms-2" type="button" (click)="goToAdmin()" title="Admin Dashboard">
+            <i class="fas fa-user-shield"></i> Admin
+          </button>
           <button class="btn btn-outline-danger logout-btn" type="button" (click)="logout()" title="Logout">
             <i class="fas fa-sign-out-alt"></i>
           </button>

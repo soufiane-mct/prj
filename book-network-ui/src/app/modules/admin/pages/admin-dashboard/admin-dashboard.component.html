@@ -1,0 +1,111 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h1>Admin Dashboard</h1>
+    <button class="btn btn-primary" (click)="refreshData()">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-clock text-warning"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.pendingApprovals }}</h3>
+        <p>Pending Approvals</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-users text-primary"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.totalUsers }}</h3>
+        <p>Total Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-user-check text-success"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.activeUsers }}</h3>
+        <p>Active Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-user-times text-danger"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.blockedUsers }}</h3>
+        <p>Blocked Users</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="actions-section">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+      <a routerLink="/admin/users" class="btn btn-primary">
+        <i class="fas fa-users"></i> Manage All Users
+      </a>
+      <button class="btn btn-secondary" (click)="refreshData()">
+        <i class="fas fa-sync-alt"></i> Refresh Data
+      </button>
+      <button class="btn btn-info" (click)="exportUsers()">
+        <i class="fas fa-download"></i> Export Users
+      </button>
+    </div>
+  </div>
+
+  <!-- Recent Pending Users -->
+  <div class="pending-users-section">
+    <h2>Recent Pending Approvals</h2>
+    
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading pending users...
+    </div>
+
+    <div *ngIf="!loading && pendingUsers.length === 0" class="no-data">
+      <i class="fas fa-check-circle"></i>
+      <p>No pending approvals at the moment</p>
+    </div>
+
+    <div *ngIf="!loading && pendingUsers.length > 0" class="users-list">
+      <div *ngFor="let user of pendingUsers" class="user-card">
+        <div class="user-info">
+          <h4>{{ user.firstname }} {{ user.lastname }}</h4>
+          <p>{{ user.email }}</p>
+          <span class="status-badge" [ngClass]="getStatusClass(user.status)">
+            {{ user.status }}
+          </span>
+        </div>
+        <div class="user-actions">
+          <button class="btn btn-success btn-sm" (click)="approveUser(user.id)">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="btn btn-danger btn-sm" (click)="rejectUser(user.id)">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-all-link" *ngIf="pendingUsers.length > 0">
+      <a routerLink="/admin/users" class="btn btn-outline-primary">
+        View All Users <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</div>

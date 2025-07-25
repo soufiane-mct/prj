@@ -24,8 +24,9 @@ public class Token {
     private LocalDateTime validateAt;
 
 
-    @ManyToOne //hna bsh possible ykon bzff d token l user whd
+    @ManyToOne
     @JoinColumn(name = "userId", nullable = false)
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE) // Cascade delete tokens when user is deleted
     private User user;
 
 }

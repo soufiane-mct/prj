@@ -14,4 +14,9 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
             """) //jib lia feedback (data dl user) mn Feedback class 3antari9 id dl book
     Page<Feedback> findAllByBookId(Integer bookId, Pageable pageable);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("DELETE FROM Feedback f WHERE f.book.id = :bookId")
+    void deleteAllByBookId(Integer bookId);
+
 }

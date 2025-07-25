@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Book Social Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .actions-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .actions-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .pending-users {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        
+        .user-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Pending Approvals</h3>
+                <div class="stat-number" id="pendingCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-number" id="totalUsers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Users</h3>
+                <div class="stat-number" id="activeUsers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Blocked Users</h3>
+                <div class="stat-number" id="blockedUsers">-</div>
+            </div>
+        </div>
+        
+        <div class="actions-section">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="/admin-panel/users" class="action-btn">Manage All Users</a>
+                <button class="action-btn" onclick="refreshData()">Refresh Data</button>
+                <button class="action-btn" onclick="exportUsers()">Export Users</button>
+            </div>
+        </div>
+        
+        <div class="pending-users">
+            <h2>Recent Pending Approvals</h2>
+            <div id="pendingUsersList" class="loading">Loading pending users...</div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            window.location.href = '/admin-panel/login';
+        }
+        
+        // API helper function
+        async function apiCall(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            };
+            
+            try {
+                const response = await fetch(url, { ...options, ...defaultOptions });
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+                return response;
+            } catch (error) {
+                console.error('API call failed:', error);
+                return null;
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const statsResponse = await apiCall('/admin/dashboard/stats');
+                if (statsResponse && statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('pendingCount').textContent = stats.pendingApprovals || 0;
+                }
+                
+                // Load pending users
+                const usersResponse = await apiCall('/admin/users/pending?size=5');
+                if (usersResponse && usersResponse.ok) {
+                    const usersData = await usersResponse.json();
+                    displayPendingUsers(usersData.content || []);
+                }
+                
+                // Load all users count
+                const allUsersResponse = await apiCall('/admin/users?size=1');
+                if (allUsersResponse && allUsersResponse.ok) {
+                    const allUsersData = await allUsersResponse.json();
+                    document.getElementById('totalUsers').textContent = allUsersData.totalElements || 0;
+                }
+                
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+                document.getElementById('pendingUsersList').innerHTML = 
+                    '<div class="error">Failed to load data. Please refresh the page.</div>';
+            }
+        }
+        
+        // Display pending users
+        function displayPendingUsers(users) {
+            const container = document.getElementById('pendingUsersList');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No pending approvals</p>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => `
+                <div class="user-card">
+                    <div class="user-info">
+                        <h4>${user.firstname} ${user.lastname}</h4>
+                        <p>${user.email} • ${user.status}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="approve-btn" onclick="approveUser(${user.id})">Approve</button>
+                        <button class="reject-btn" onclick="rejectUser(${user.id})">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Approve user
+        async function approveUser(userId) {
+            const response = await apiCall(`/admin/users/${userId}/approve`, { method: 'POST' });
+            if (response && response.ok) {
+                alert('User approved successfully!');
+                loadDashboardData();
+            } else {
+                alert('Failed to approve user. Please try again.');
+            }
+        }
+        
+        // Reject user
+        async function rejectUser(userId) {
+            if (confirm('Are you sure you want to reject this user?')) {
+                const response = await apiCall(`/admin/users/${userId}/reject`, { method: 'POST' });
+                if (response && response.ok) {
+                    alert('User rejected successfully!');
+                    loadDashboardData();
+                } else {
+                    alert('Failed to reject user. Please try again.');
+                }
+            }
+        }
+        
+        // Refresh data
+        function refreshData() {
+            loadDashboardData();
+        }
+        
+        // Export users (placeholder)
+        function exportUsers() {
+            alert('Export functionality coming soon!');
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin-panel/login';
+        }
+        
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+</body>
+</html>

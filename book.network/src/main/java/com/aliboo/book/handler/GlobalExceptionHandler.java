@@ -20,6 +20,27 @@ import static org.springframework.http.HttpStatus.*;
 
 public class GlobalExceptionHandler { //hna dl exeption bch ndiro fiha shihaja matalan maknsh user dir lia hd exeption ola matalan mshi auth dir lia hd l exeption...
 
+    @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleConstraintViolation(org.hibernate.exception.ConstraintViolationException ex) {
+        return ResponseEntity
+                .status(CONFLICT)
+                .body(ExceptionResponse.builder()
+                        .businessErrorDescription("Database constraint violation (possible foreign key constraint)")
+                        .error(ex.getSQLException().getMessage())
+                        .build()
+                );
+    }
+
+@ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+public ResponseEntity<ExceptionResponse> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex) {
+    return ResponseEntity
+        .status(NOT_FOUND)
+        .body(ExceptionResponse.builder()
+            .businessErrorDescription("Resource not found")
+            .error(ex.getMessage())
+            .build());
+}
+
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ExceptionResponse> handleException (LockedException exp){ //handleException at catshi lina exeption libghina ila bzff dl exeption o db bdina b LockedException
         return ResponseEntity

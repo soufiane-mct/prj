@@ -73,9 +73,8 @@ public class User implements UserDetails, Principal { //Principal ankhdmo biha m
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles
                 .stream()
-                .map(r -> new SimpleGrantedAuthority(r.getName())) //hna at3ti l auth l role dik r hia role
-                .collect(Collectors.toList());//hna adir collection of GrantedAuthority o mn hd GrantedAuthority khdmna b SimpleGrantedAuthority o drnaha f role
-
+                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getName())) // Ensure Spring Security recognizes roles
+                .collect(Collectors.toList());
     }
 
     @Override

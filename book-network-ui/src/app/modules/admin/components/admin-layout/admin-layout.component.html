@@ -1,0 +1,25 @@
+<div class="admin-layout">
+  <nav class="admin-navbar">
+    <div class="navbar-brand">
+      <h2>Admin Panel</h2>
+    </div>
+    <div class="navbar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-users"></i> User Management
+      </a>
+      <a routerLink="/products" class="nav-link">
+        <i class="fas fa-book"></i> Back to Books
+      </a>
+      <button (click)="logout()" class="nav-link logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </nav>
+  
+  <main class="admin-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

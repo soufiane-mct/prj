@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public interface BookTransactionHistoryRepository extends JpaRepository<BookTransactionHistory, Integer> {
@@ -69,4 +71,14 @@ public interface BookTransactionHistoryRepository extends JpaRepository<BookTran
             """)
 
     List<BookTransactionHistory> findByBookIdAndOwnerId(Integer bookId, Integer id);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM BookTransactionHistory h WHERE h.user.id = :userId")
+    void deleteAllByUserId(Integer userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM BookTransactionHistory h WHERE h.book.id = :bookId")
+    void deleteAllByBookId(Integer bookId);
 }

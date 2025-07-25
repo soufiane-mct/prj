@@ -23,6 +23,11 @@ export const routes: Routes = [
      loadChildren: () => import('./modules/book/book.module').then(m => m.BookModule) //module.BookModule hit shild path dl products
     },
     {
+      path: 'admin',
+      loadChildren: () => import('./modules/admin/admin.module').then(m => m.AdminModule),
+      canActivate: [authGuard] // Only authenticated admins can access
+    },
+    {
       path: '',
       redirectTo: '/products',
       pathMatch: 'full'

@@ -14,19 +14,19 @@ public class GuestRentRequestController {
     private final BookRepository bookRepository;
 
     @PostMapping
-    public ResponseEntity<?> createGuestRent(@RequestBody GuestRentRequestDto dto) {
-        Book book = bookRepository.findById(dto.bookId()).orElse(null);
-        if (book == null) return ResponseEntity.badRequest().body("Book not found");
-        GuestRentRequest req = GuestRentRequest.builder()
-                .book(book)
-                .name(dto.name())
-                .lastname(dto.lastname())
-                .phone(dto.phone())
-                .location(dto.location())
-                .build();
-        guestRentRequestRepository.save(req);
-        return ResponseEntity.ok().build();
-    }
+public ResponseEntity<?> createGuestRent(@RequestBody GuestRentRequestDto dto) {
+    Book book = bookRepository.findById(dto.bookId()).orElse(null);
+    if (book == null) return ResponseEntity.badRequest().body("Book not found");
+    GuestRentRequest req = GuestRentRequest.builder()
+            .book(book)
+            .name(dto.name())
+            .lastname(dto.lastname())
+            .phone(dto.phone())
+            .location(dto.location())
+            .build();
+    guestRentRequestRepository.save(req);
+    return ResponseEntity.noContent().build();
+}
 
     @GetMapping("/owner")
     public List<GuestRentRequest> getOwnerGuestRents(Authentication auth) {
