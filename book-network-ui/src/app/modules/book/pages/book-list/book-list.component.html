@@ -14,8 +14,9 @@
     </div>
   </div>
 
+
   <!-- Header Section -->
-  <div class="row mb-4">
+  <!-- <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -26,14 +27,11 @@
           <p class="text-muted mb-0">Explore our collection of shared products from the community</p>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-outline-secondary" type="button">
-            <i class="fas fa-sort me-2"></i>
-            Sort
-          </button>
+          
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Alert Messages -->
   <div class="row mb-4" *ngIf="message">
@@ -52,8 +50,36 @@
     </div>
   </div>
 
+  <div class="search-header">
+  <div class="left-part">
+    <h2><i class="bi bi-people-fill"></i> Discover Products</h2>
+    <p>Explore our collection of shared products from the community</p>
+  </div>
+  <div class="right-part">
+    <div class="form-group">
+      <label for="category"><strong>Filter by Category</strong></label>
+      <select [(ngModel)]="selectedCategoryId" id="categorySelect" class="form-control" (change)="onSearch()">
+        <option [ngValue]="undefined">All Categories</option>
+        <option *ngFor="let category of categories" [ngValue]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="product-name"><strong>Search by Name</strong></label>
+      <input [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" class="form-control" placeholder="Enter product name">
+    </div>
+
+    <button class="search-button">
+      <i class="bi bi-funnel-fill"></i> Search
+    </button>
+  </div>
+</div>
+
+
   <!-- Improved Filter Row -->
-  <div class="mb-4 d-flex flex-wrap align-items-end gap-3 bg-light p-3 rounded shadow-sm">
+  <!-- <div class="mb-4 d-flex flex-wrap align-items-end gap-3 bg-light p-3 rounded shadow-sm">
     <div class="d-flex flex-column">
       <label for="categoryFilter" class="form-label fw-semibold mb-1">Filter by Category:</label>
       <select id="categoryFilter" class="form-select stylish-input w-auto min-w-200"
@@ -74,7 +100,7 @@
         Search
       </button>
     </div>
-  </div>
+  </div> -->
 
   <!-- Products Grid -->
   <div class="row">

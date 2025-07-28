@@ -58,9 +58,9 @@ export class BookCardComponent {
     this.share.emit(this._book);
   }
 
-  onArchive() {
-    this.archive.emit(this._book);
-  }
+  // onArchive() {
+  //   this.archive.emit(this._book);
+  // }
 
   onBorrow() {
     if (!this.tokenService.token) {
