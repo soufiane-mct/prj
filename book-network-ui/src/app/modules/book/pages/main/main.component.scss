@@ -8,7 +8,8 @@
 
 .main-content {
   flex: 1;
-  padding-top: 80px; // Account for fixed navbar
+  margin-top: 0;
+  padding-top: 0px; // Account for fixed navbar
   min-height: calc(100vh - 80px - 60px); // Viewport height minus navbar and footer
   position: relative;
   
