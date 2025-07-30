@@ -5,17 +5,26 @@
     <p class="p-0 m-0" *ngFor="let msg of errorMsg">{{msg}}</p>
   </div>
   <div class="d-flex gap-2">
-    <div class="col-3">
-      <img class="rounded-1" width="100%" height="100%" [src]=" selectedPicture || 'https://source.unsplash.com/user/c_v_r/1900x800'" alt="">
-      <div class="mt-2">
-        <input
-          (change)="onFileSelected($event)"
-          class="form-control"
-          type="file"
-          id="formFile"
-          accept="image/*"
-        >
-      </div>
+    <!-- IMAGES -->
+<div class="mb-2">
+  <label class="form-label">Upload Images (max 3) *</label>
+  <input class="form-control" type="file" accept="image/*" multiple (change)="onMultipleImagesSelected($event)">
+</div>
+
+<!-- Preview -->
+<div class="d-flex gap-2 mt-2 flex-wrap">
+  <img *ngFor="let img of previewImages" [src]="img" width="80" height="80" class="rounded border" />
+</div>
+
+<!-- VIDÉO -->
+<div class="mb-2 mt-3">
+  <label class="form-label">Upload Product Video (optional)</label>
+  <input class="form-control" type="file" accept="video/*" (change)="onVideoSelected($event)">
+</div>
+
+<!-- Preview Video -->
+<video *ngIf="previewVideo" [src]="previewVideo" controls width="100%" class="mt-2 rounded border"></video>
+
     </div>
     <div class="col-9">
       <form class="row g-3">
@@ -72,7 +81,6 @@
       </form>
     </div>
   </div>
-</div>
 
 <style>
   .stylish-input {

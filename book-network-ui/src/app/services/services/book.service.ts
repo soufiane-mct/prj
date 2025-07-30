@@ -38,6 +38,8 @@ import { updateShareableStatus } from '../fn/book/update-shareable-status';
 import { UpdateShareableStatus$Params } from '../fn/book/update-shareable-status';
 import { uploadBookCoverPicture } from '../fn/book/upload-book-cover-picture';
 import { UploadBookCoverPicture$Params } from '../fn/book/upload-book-cover-picture';
+// remplace par ton URL backend si différent
+
 
 @Injectable({ providedIn: 'root' })
 export class BookService extends BaseService {
@@ -108,6 +110,11 @@ export class BookService extends BaseService {
 }>> {
     return uploadBookCoverPicture(this.http, this.rootUrl, params, context);
   }
+
+  uploadBookWithMedia(formData: FormData) {
+  return this.http.post(`${this.apiUrl}/books/upload-with-media`, formData);// hadi hia li 7m9atna khass tmchi l backend
+}
+
 
   /**
    * This method provides access only to the response body.
