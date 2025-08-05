@@ -25,7 +25,6 @@ import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { error } from 'node:console';
 import { AuthenticationControllerService } from '../../services/services';
 import { TokenService } from '../../services/token/token.service';
 export interface AuthenticationRequest {

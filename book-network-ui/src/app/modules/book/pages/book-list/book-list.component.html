@@ -3,13 +3,13 @@
   <div class="success-notification" *ngIf="showSuccessNotification">
     <div class="notification-content">
       <div class="notification-icon">
-        <i class="fas fa-check-circle"></i>
+        <i class="bi bi-check-circle-fill"></i>
       </div>
       <div class="notification-text">
         {{ successMessage }}
       </div>
       <button class="notification-close" (click)="showSuccessNotification = false">
-        <i class="fas fa-times"></i>
+        <i class="bi bi-x-lg"></i>
       </button>
     </div>
   </div>
@@ -36,16 +36,14 @@
   <!-- Alert Messages -->
   <div class="row mb-4" *ngIf="message">
     <div class="col-12">
-      <div class="alert fade-in" 
+      <div class="alert fade-in d-flex align-items-center" 
            [class.alert-danger]="level==='error'"
            [class.alert-success]="level==='success'"
            role="alert">
-        <div class="d-flex align-items-center">
-          <i class="fas me-3" 
-             [class.fa-check-circle]="level==='success'"
-             [class.fa-exclamation-circle]="level==='error'"></i>
-          <span>{{message}}</span>
-        </div>
+        <i class="bi me-3" 
+           [class.bi-check-circle-fill]="level==='success'"
+           [class.bi-exclamation-triangle-fill]="level==='error'"></i>
+        <span>{{message}}</span>
       </div>
     </div>
   </div>
@@ -57,7 +55,7 @@
   </div>
   <div class="right-part">
     <div class="form-group">
-      <label for="category"><strong>Filter by Category</strong></label>
+      <label for="categorySelect"><strong>Filter by Category</strong></label>
       <select [(ngModel)]="selectedCategoryId" id="categorySelect" class="form-control" (change)="onSearch()">
         <option [ngValue]="undefined">All Categories</option>
         <option *ngFor="let category of categories" [ngValue]="category.id">
@@ -67,13 +65,23 @@
     </div>
 
     <div class="form-group">
-      <label for="product-name"><strong>Search by Name</strong></label>
-      <input [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" class="form-control" placeholder="Enter product name">
+      <label for="searchName"><strong>Search by Name</strong></label>
+      <input id="searchName" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" class="form-control" placeholder="Enter product name">
     </div>
 
-    <button class="search-button">
-      <i class="bi bi-funnel-fill"></i> Search
-    </button>
+    <div class="form-group">
+      <label><strong>Filter by Location</strong></label>
+      <div class="location-input" (click)="openMapModal()">
+        <i class="bi bi-geo-alt"></i>
+        <span>{{ locationName || (selectedLocation ? 'Location selected' : 'Select location') }}</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="search-button" (click)="onSearch()">
+        <i class="bi bi-funnel-fill"></i> Search
+      </button>
+    </div>
   </div>
 </div>
 
@@ -103,11 +111,11 @@
   </div> -->
 
   <!-- Products Grid -->
-  <div class="row">
+  <div class="row" *ngIf="!isLoading && bookResponse.content && bookResponse.content.length > 0">
     <div class="col-12">
       <div class="books-grid">
         <div class="book-card-wrapper fade-in" 
-             *ngFor="let book of filteredBooks; trackBy: trackByBookId">
+             *ngFor="let book of bookResponse.content; trackBy: trackByBookId">
           <app-book-card
             [book]="book"
             (borrow)="borrowBook($event)"
@@ -121,11 +129,37 @@
   </div>
 
   <!-- Loading State -->
-  <div class="row" *ngIf="!bookResponse.content || bookResponse.content.length === 0">
+  <div class="row" *ngIf="isLoading">
     <div class="col-12 text-center py-5">
       <div class="loading-state">
-        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
         <h4 class="text-muted">Loading products...</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results State -->
+  <div class="row" *ngIf="!isLoading">
+    <div class="col-12">
+      <div *ngIf="bookResponse.content?.length === 0 && (searchTerm || selectedCategoryId || locationFilter || (selectedLocation?.latitude && selectedLocation?.longitude))" class="no-books-message">
+        <div class="text-center">
+          <i class="bi bi-search text-muted" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+          <h4>No products match your filters</h4>
+          <p class="text-muted">Try adjusting your search or filter criteria</p>
+          <button class="btn btn-outline-primary mt-3" (click)="clearFilters()">
+            <i class="bi bi-x-circle me-2"></i>Clear all filters
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="bookResponse.content === undefined && !isLoading" class="no-books-message">
+        <div class="text-center">
+          <i class="fas fa-book-open fa-4x mb-3 text-muted"></i>
+          <h4>No products found</h4>
+          <p class="text-muted">Please check back later or try refreshing the page</p>
+        </div>
       </div>
     </div>
   </div>
@@ -201,9 +235,69 @@
   </div>
 </div>
 
+<!-- Map Picker Modal -->
+<div class="map-modal-container" [class.show]="showMapModal">
+  <div class="map-modal-backdrop" (click)="closeMapModal()"></div>
+  <div class="map-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="map-modal-content">
+      <div class="map-modal-header">
+        <h5 class="map-modal-title">
+          <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+          Select Location
+        </h5>
+        <button type="button" class="map-modal-close" (click)="closeMapModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="map-modal-body">
+        
+        <div class="map-container" style="height: 400px; border-radius: 8px; overflow: hidden;">
+          <app-map-picker
+            [initialLat]="selectedLocation?.latitude || 34.0209"
+            [initialLng]="selectedLocation?.longitude || -6.8416"
+            [initialRadius]="selectedLocation?.radius || 5"
+            [showRadiusControl]="true"
+            (locationSelected)="onLocationSelected($event)">
+          </app-map-picker>
+        </div>
+        
+        <div class="selected-location mt-3 p-3 bg-light rounded" *ngIf="selectedLocation">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+            <div>
+              <div class="fw-bold">Selected Location</div>
+              <div class="form-text text-muted">Click on the map to select a location inside Morocco</div>
+              <div class="text-muted small">
+                {{ selectedLocation.latitude | number:'1.4-4' }}, {{ selectedLocation.longitude | number:'1.4-4' }}
+                <span class="ms-2 badge bg-info">{{ selectedLocation.radius }} km radius</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="map-modal-footer d-flex justify-content-between align-items-center">
+        <button type="button" class="btn btn-outline-danger" (click)="clearLocation()" [disabled]="!selectedLocation">
+          <i class="fas fa-trash-alt me-1"></i> Clear
+        </button>
+        <div>
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="closeMapModal()">
+            <i class="fas fa-times me-1"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="applyLocation()" [disabled]="!selectedLocation">
+            <i class="fas fa-check me-1"></i> Apply Location
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Guest Rent Modal -->
 <app-guest-rent-modal
+  *ngIf="guestModalBookId"
   [show]="guestModalVisible"
-  [bookTitle]="guestModalBookTitle"
+  [bookTitle]="guestModalBookTitle || ''"
   (close)="onGuestRentModalClose()"
   (save)="onGuestRentModalSave($event)">
 </app-guest-rent-modal>

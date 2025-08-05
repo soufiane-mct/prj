@@ -7,7 +7,7 @@ export interface BookResponse {
   authorName?: string;
   cover?: Array<string>;
   id?: number;
-  isbn?: string;
+
   owner?: string;
   rate?: number;
   shareable?: boolean;
@@ -15,4 +15,8 @@ export interface BookResponse {
   title?: string;
   categoryName?: string;
   categoryId?: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  fullAddress?: string;
 }

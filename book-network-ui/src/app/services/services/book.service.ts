@@ -70,6 +70,19 @@ export class BookService extends BaseService {
     );
   }
 
+  filterByLocation(location: string, page: number = 0, size: number = 5) {
+    return this.http.get<PageResponseBookResponse>(
+      `${this.rootUrl}/books/filter-by-location`,
+      {
+        params: {
+          location: location || '',
+          page: page.toString(),
+          size: size.toString()
+        }
+      }
+    );
+  }
+
   /** Path part for operation `saveBook()` */
   static readonly SaveBookPath = '/books';
 

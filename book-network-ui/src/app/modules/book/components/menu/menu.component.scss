@@ -13,6 +13,26 @@ li > a {
 // Menu component specific styles
 .navbar {
   padding: 1rem 0;
+  transition: transform 0.3s ease-in-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  
+  // Initial state - visible
+  transform: translateY(0);
+  
+  // Hide state - slides up
+  &.navbar-hide {
+    transform: translateY(-100%);
+  }
+  
+  // Show state - slides down
+  &.navbar-show {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
   
   .brand-text {
     font-size: 1.5rem;

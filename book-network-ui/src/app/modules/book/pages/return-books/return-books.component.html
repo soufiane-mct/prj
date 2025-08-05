@@ -25,7 +25,7 @@
     <tr
       *ngFor="let book of returnedBooks.content; let index = index">
       <th scope="row">{{ index + 1 }}</th>
-      <td>{{ book.isbn }}</td>
+      <td>{{ book.location }}</td>
       <td>{{ book.title }}</td>
       <td>{{ book.authorName }}</td>
       <td><i class="fas fa-star text-warning"></i> {{ book.rate }}</td>

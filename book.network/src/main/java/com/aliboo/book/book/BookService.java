@@ -18,24 +18,60 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import static com.aliboo.book.book.BookSpecification.withOwnerId;
 
 @Service
 @RequiredArgsConstructor
 public class BookService {
+
+    public PageResponse<BookResponse> filterByLocation(String location, int page, int size) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        var books = bookRepository.findByLocationContainingIgnoreCase(location, pageable);
+        var content = books.getContent().stream().map(bookMapper::toBookResponse).toList();
+        return new com.aliboo.book.common.PageResponse<BookResponse>(
+            content,
+            books.getNumber(),
+            books.getSize(),
+            books.getTotalElements(),
+            books.getTotalPages(),
+            books.isFirst(),
+            books.isLast()
+        );
+    }
 
     private final BookMapper bookMapper;
     private final BookRepository bookRepository;
     private final BookTransactionHistoryRepository transactionHistoryRepository ;
     private final FileStorageService fileStorageService;
 
-    public Integer save(BookRequest request, Authentication connectedUser) {//connectedUser bhal var drna fiha Authentication ra deja drnaha f bookcontroller
-        //hna anjibo user mn Authentication 3an tari9 userdetails o Principal li deja drna o endna fluser
+    public Integer save(BookRequest request, Authentication connectedUser) {
+        // Get the authenticated user
         User user = ((User) connectedUser.getPrincipal());
-        Book book = bookMapper.toBook(request); //bookMapper class li drna fiha l build ola save l vars d request o dirhom lina f var book
-        book.setOwner(user); //l oner dl book howa luser li auth
-        return bookRepository.save(book).getId();//hna andiro savel book f database dylna
+        
+        // Validate location data
+        if (request.location() == null || request.location().trim().isEmpty()) {
+            throw new IllegalArgumentException("Location name is required");
+        }
+        if (request.fullAddress() == null || request.fullAddress().trim().isEmpty()) {
+            throw new IllegalArgumentException("Full address is required");
+        }
+        if (request.latitude() == null || request.longitude() == null) {
+            throw new IllegalArgumentException("Latitude and longitude are required");
+        }
+        
+        // Map the request to a Book entity
+        Book book = bookMapper.toBook(request);
+        
+        // Set the owner and ensure location data is properly set
+        book.setOwner(user);
+        book.setLocation(request.location().trim());
+        book.setFullAddress(request.fullAddress().trim());
+        book.setLatitude(request.latitude());
+        book.setLongitude(request.longitude());
+        
+        // Save the book
+        return bookRepository.save(book).getId();
     }
 
     public BookResponse findById(Integer bookId) {
@@ -46,51 +82,216 @@ public class BookService {
     }
 
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BookService.class);
+    
+    // Earth's radius in kilometers
+    private static final double EARTH_RADIUS_KM = 6371.0;
+
     //fl PageResponse dir lia BookResponse (y3ni anjibo gae l books li kynin o an9smohom ela pages)
-    public PageResponse<BookResponse> findAllBooks(int page, int size, Authentication connectedUser) {
-        Integer userId = null;
-        if (connectedUser != null && connectedUser.getPrincipal() != null) {
-            userId = ((User) connectedUser.getPrincipal()).getId();
+    public PageResponse<BookResponse> findAllBooks(int page, int size, String location, String search, Integer categoryId, Double lat, Double lng, Double radius, Authentication connectedUser) {
+        log.info("Executing findAllBooks with params: page={}, size={}, location='{}', search='{}', categoryId={}, lat={}, lng={}, radius={}", 
+            page, size, location, search, categoryId, lat, lng, radius);
+            
+        try {
+            Integer userId = null;
+            if (connectedUser != null && connectedUser.getPrincipal() != null) {
+                userId = ((User) connectedUser.getPrincipal()).getId();
+            }
+            
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+            Page<Book> books;
+            
+            // Build search pattern for SQL LIKE query (only if search term is provided)
+            String searchPattern = (search != null && !search.trim().isEmpty()) 
+                ? "%" + search.trim().toLowerCase() + "%" 
+                : null;
+            
+            // For location-based search (by coordinates and radius)
+            if (lat != null && lng != null && radius != null && radius > 0) {
+                log.info("Performing geospatial search with lat={}, lng={}, radius={}km, search='{}', categoryId={}", 
+                    lat, lng, radius, search, categoryId);
+                    
+                // Use geospatial filtering with coordinates and radius
+                books = bookRepository.findAllBooksNearby(
+                    pageable, 
+                    lat, 
+                    lng, 
+                    radius, 
+                    searchPattern, 
+                    categoryId
+                );
+                
+                log.info("Geospatial search completed. Found {} books", books.getTotalElements());
+            } 
+            // For text-based location search (by city/neighborhood name)
+            else if (location != null && !location.trim().isEmpty()) {
+                log.info("Performing text-based location search for: '{}'", location);
+                String locationPattern = "%" + location.trim().toLowerCase() + "%";
+                
+                if (userId != null) {
+                    books = bookRepository.findAllDisplayableBooksByLocation(
+                        pageable, 
+                        userId, 
+                        locationPattern
+                    );
+                } else {
+                    books = bookRepository.findAllDisplayableBooksForGuestsByLocation(
+                        pageable, 
+                        locationPattern
+                    );
+                }
+                log.info("Text-based location search completed. Found {} books for location: '{}'", 
+                    books.getTotalElements(), location);
+            }
+            // For category or general search
+            else if (searchPattern != null || categoryId != null) {
+                log.info("Performing search with filters - search='{}', categoryId={}", search, categoryId);
+                if (userId != null) {
+                    books = bookRepository.findAllDisplayableBooksWithFilters(
+                        pageable, 
+                        userId, 
+                        null, // location
+                        searchPattern, 
+                        categoryId
+                    );
+                } else {
+                    books = bookRepository.findAllDisplayableBooksForGuestsWithFilters(
+                        pageable, 
+                        null, // location
+                        searchPattern, 
+                        categoryId
+                    );
+                }
+                log.info("Search with filters completed. Found {} books", books.getTotalElements());
+            }
+            // Default case: get all displayable books
+            else {
+                log.info("No specific filters provided. Fetching all displayable books");
+                if (userId != null) {
+                    books = bookRepository.findAllDisplayableBooks(pageable, userId);
+                } else {
+                    books = bookRepository.findAllDisplayableBooksForGuests(pageable);
+                }
+                log.info("Fetched {} displayable books", books.getTotalElements());
+            }
+            
+            try {
+                List<BookResponse> bookResponses = books.stream()
+                    .map(book -> {
+                        try {
+                            return bookMapper.toBookResponse(book);
+                        } catch (Exception e) {
+                            log.error("Error mapping book with ID {}: {}", book.getId(), e.getMessage(), e);
+                            throw new RuntimeException("Error processing book data", e);
+                        }
+                    })
+                    .toList();
+                    
+                PageResponse<BookResponse> response = new PageResponse<>(
+                    bookResponses,
+                    books.getNumber(),
+                    books.getSize(),
+                    books.getTotalElements(),
+                    books.getTotalPages(),
+                    books.isFirst(),
+                    books.isLast()
+                );
+                
+                log.info("Successfully processed {} books for response", bookResponses.size());
+                return response;
+                
+            } catch (Exception e) {
+                log.error("Error processing book list: {}", e.getMessage(), e);
+                throw new RuntimeException("Error processing book list: " + e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            log.error("Error in findAllBooks: {}", e.getMessage(), e);
+            throw new RuntimeException("Error in findAllBooks: " + e.getMessage(), e);
         }
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<Book> books;
-        if (userId != null) {
-            books = bookRepository.findAllDisplayableBooks(pageable, userId);
-        } else {
-            books = bookRepository.findAllDisplayableBooksForGuests(pageable);
-        }
-        List<BookResponse> bookResponse = books.stream()
-                .map(bookMapper::toBookResponse)
-                .toList();
-        return new PageResponse<>(
-                bookResponse,
-                books.getNumber(),
-                books.getSize(),
-                books.getTotalElements(),
-                books.getTotalPages(),
-                books.isFirst(),
-                books.isLast()
-        );
     }
 
     //hna anjibo books by owner
-    public PageResponse<BookResponse> findAllBooksByOwner(int page, int size, Authentication connectedUser) {
+    public PageResponse<BookResponse> findAllBooksByOwner(int page, int size, String location, Double lat, Double lng, Double radius, Authentication connectedUser) {
         User user = ((User) connectedUser.getPrincipal());
-        Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<Book> books = bookRepository.findAll(withOwnerId(user.getId()), (org.springframework.data.domain.Pageable) pageable); //filter books by user 3an tari9 BookSpecification li drna katjib lina l ow o an3tiwha hna l user id o l pageable o bch nkhdmo biha khas nzido f bookRepo extends d jpaspecificationExecutor<book>
-
-        List<BookResponse> bookResponse = books.stream()
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Book> books;
+        
+        log.debug("findAllBooksByOwner called with location='{}', lat={}, lng={}, radius={} for userId={}", 
+            location, lat, lng, radius, user.getId());
+            
+        // If we have coordinates and radius, use them for filtering
+        if (lat != null && lng != null && radius != null) {
+            log.debug("Using coordinate-based filtering with lat={}, lng={}, radius={}", lat, lng, radius);
+            // Convert radius from kilometers to degrees (approximate)
+            double radiusInDegrees = radius / 111.0;
+            double minLat = lat - radiusInDegrees;
+            double maxLat = lat + radiusInDegrees;
+            double minLng = lng - (radiusInDegrees / Math.cos(Math.toRadians(lat)));
+            double maxLng = lng + (radiusInDegrees / Math.cos(Math.toRadians(lat)));
+            
+            log.debug("Searching in bounding box: lat=[{}, {}], lng=[{}, {}]", minLat, maxLat, minLng, maxLng);
+            
+            // First, get all books within the bounding box (fast filter)
+            List<Book> booksInBoundingBox = bookRepository.findByOwnerIdAndCoordinatesWithin(
+                user.getId(), minLat, maxLat, minLng, maxLng);
+                
+            log.debug("Found {} books in bounding box", booksInBoundingBox.size());
+            
+            // Then filter by distance (slower but more accurate)
+            List<Book> filteredBooks = booksInBoundingBox.stream()
+                .filter(book -> book.getLatitude() != null && book.getLongitude() != null)
+                .filter(book -> {
+                    double distance = calculateDistance(
+                        lat, lng, 
+                        book.getLatitude(), book.getLongitude());
+                    return distance <= radius;
+                })
+                .collect(Collectors.toList());
+                
+            log.debug("After distance filtering: {} books", filteredBooks.size());
+            
+            // Apply pagination manually
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), filteredBooks.size());
+            
+            List<Book> paginatedBooks = filteredBooks.subList(start, end);
+            List<BookResponse> bookResponses = paginatedBooks.stream()
                 .map(bookMapper::toBookResponse)
-                .toList();  //hdshi kmldiro f var bookResponse
+                .collect(Collectors.toList());
+                
+            return new PageResponse<>(
+                bookResponses,
+                page,
+                size,
+                filteredBooks.size(),
+                (int) Math.ceil((double) filteredBooks.size() / size),
+                page == 0,
+                end >= filteredBooks.size()
+            );
+        }
+        // Fall back to text-based location filtering if no coordinates provided
+        else if (location != null && !location.isEmpty()) {
+            log.debug("Using text-based location filter: {}", location);
+            books = bookRepository.findByOwnerIdAndLocationContainingIgnoreCase(user.getId(), location, pageable);
+        } 
+        // No filters, just get all books for the owner
+        else {
+            books = bookRepository.findByOwnerId(user.getId(), pageable);
+        }
+        
+        List<BookResponse> bookResponses = books.stream()
+            .map(bookMapper::toBookResponse)
+            .collect(Collectors.toList());
+            
         return new PageResponse<>(
-                bookResponse,
-                books.getNumber(), //number d page hdo endna fl PageResponse
-                books.getSize(),
-                books.getTotalElements(),
-                books.getTotalPages(),
-                books.isFirst(),
-                books.isLast()
-        ); //hdi bhl lwla li lfo9 ir hdi atjibhom byowner
+            bookResponses,
+            books.getNumber(),
+            books.getSize(),
+            books.getTotalElements(),
+            books.getTotalPages(),
+            books.isFirst(),
+            books.isLast()
+        );
     }
 
     //hdi bch njibo all borrowed books li eta l user
@@ -264,12 +465,37 @@ public class BookService {
     }
 
     public void deleteBook(Integer bookId, Authentication connectedUser) {
-        Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new EntityNotFoundException("No book found with the ID::" + bookId));
+        Book book = getBookEntityById(bookId);
         User user = ((User) connectedUser.getPrincipal());
-        if (!Objects.equals(book.getOwner().getId(), user.getId())) {
-            throw new OperationNotPermitedException("You cannot delete others' books");
+        if (!book.getOwner().getId().equals(user.getId())) {
+            throw new OperationNotPermitedException("You are not allowed to delete this book");
         }
-        bookRepository.deleteById(bookId);
+        bookRepository.delete(book);
+    }
+    
+    /**
+     * Calculate distance between two points in kilometers using Haversine formula
+     * @param lat1 Latitude of first point
+     * @param lon1 Longitude of first point
+     * @param lat2 Latitude of second point
+     * @param lon2 Longitude of second point
+     * @return Distance in kilometers
+     */
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        // Convert latitude and longitude from degrees to radians
+        double lat1Rad = Math.toRadians(lat1);
+        double lon1Rad = Math.toRadians(lon1);
+        double lat2Rad = Math.toRadians(lat2);
+        double lon2Rad = Math.toRadians(lon2);
+
+        // Haversine formula
+        double dLat = lat2Rad - lat1Rad;
+        double dLon = lon2Rad - lon1Rad;
+        double a = Math.pow(Math.sin(dLat / 2), 2) + 
+                   Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+                   Math.pow(Math.sin(dLon / 2), 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return EARTH_RADIUS_KM * c;
     }
 }

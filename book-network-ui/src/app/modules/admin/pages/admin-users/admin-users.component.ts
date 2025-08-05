@@ -3,9 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { AdminService } from '../../services/admin.service';
+import { TokenService } from '../../../../services/token/token.service';
 
 @Component({
   selector: 'app-admin-users',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.scss']
@@ -26,7 +28,19 @@ export class AdminUsersComponent implements OnInit {
   statusFilter = '';
   searchQuery = '';
 
-  constructor(private adminService: AdminService) { }
+  currentUserEmail: string = '';
+
+  constructor(
+    private adminService: AdminService,
+    private tokenService: TokenService
+  ) { 
+    // Get current user's email from token
+    const token = this.tokenService.token;
+    if (token) {
+      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      this.currentUserEmail = tokenData.sub; // Assuming email is stored in 'sub' claim
+    }
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -139,9 +153,19 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
+  isCurrentUser(user: any): boolean {
+    return user.email === this.currentUserEmail;
+  }
+
   getUserActions(user: any): string[] {
     const actions = [];
     
+    // Don't show any actions for the current admin user
+    if (this.isCurrentUser(user)) {
+      return [];
+    }
+    
+    // For other users, show appropriate actions
     if (user.accountLocked && user.enabled) {
       actions.push('approve');
     }

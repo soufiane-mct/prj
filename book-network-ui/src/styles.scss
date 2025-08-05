@@ -1,7 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
 // Import Bootstrap and FontAwesome
 @import "bootstrap/dist/css/bootstrap.min.css";
-@import "@fortawesome/fontawesome-free/css/all.min.css";
+@import "~@fortawesome/fontawesome-free/css/all.min.css";
+
+// Import Leaflet CSS
+@import "~leaflet/dist/leaflet.css";
+
+// Fix for Leaflet default icon paths
+.leaflet-default-icon-path {
+  background-image: url('assets/leaflet/images/marker-icon.png');
+}
+
+.leaflet-default-shadow-path {
+  background-image: url('assets/leaflet/images/marker-shadow.png');
+}
+
+/* Set the default icon for all markers */
+.leaflet-default-icon {
+  background-image: url('assets/leaflet/images/marker-icon.png');
+}
+
+.leaflet-default-icon-shadow {
+  background-image: url('assets/leaflet/images/marker-shadow.png');
+}
 
 // Modern CSS Variables for consistent theming
 :root {

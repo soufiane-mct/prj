@@ -32,13 +32,137 @@
                    placeholder="Enter price">
           </div>
         </div>
+        <!-- Location Picker -->
         <div class="col-md-6">
-          <label for="isbn" class="form-label">Location</label>
-          <div class="input-group stylish-input">
-            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-            <input [(ngModel)]="bookRequest.isbn" type="text" class="form-control border-0" id="isbn" name="isbn"
-                   placeholder="Enter location">
+          <label for="location" class="form-label">Location</label>
+          <div class="mb-2">
+            <div class="input-group">
+              <input type="text" 
+                     class="form-control" 
+                     [value]="bookRequest.fullAddress || formatLocation()" 
+                     placeholder="Search or click the map to select location" 
+                     (click)="openLocationModal()"
+                     name="location"
+                     readonly>
+              <button type="button" class="btn btn-outline-primary" (click)="openLocationModal()">
+                <i class="fas fa-map-marker-alt me-2"></i>Select on Map
+              </button>
+            </div>
+            <small class="text-muted" *ngIf="bookRequest.latitude && bookRequest.longitude">
+              Coordinates: {{ bookRequest.latitude | number:'1.4-4' }}, {{ bookRequest.longitude | number:'1.4-4' }}
+            </small>
           </div>
+
+          <!-- Combined Location Picker & Preview Modal -->
+          <div class="modal fade show" [ngClass]="{'d-block': showLocationModal}" tabindex="-1" role="dialog" *ngIf="showLocationModal">
+            <div class="modal-dialog modal-xl" role="document">
+              <div class="modal-content">
+                <div class="modal-header bg-light">
+                  <h5 class="modal-title">
+                    <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                    Select Location
+                  </h5>
+                  <button type="button" class="btn-close" (click)="closeLocationModal()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                  <div class="row g-0">
+                    <!-- Map Picker Column -->
+                    <div class="col-md-8">
+                      <div class="p-3 border-end h-100">
+                        <div class="mb-3">
+                          <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   [(ngModel)]="locationSearch" 
+                                   name="locationSearch"
+                                   placeholder="Search for a location..."
+                                   (keyup.enter)="searchLocation()">
+                            <button class="btn btn-outline-secondary" type="button" (click)="searchLocation()">
+                              Search
+                            </button>
+                          </div>
+                        </div>
+                        <div class="map-container" style="height: 400px; border-radius: 8px; overflow: hidden;">
+                          <app-map-picker
+                            [initialLat]="bookRequest.latitude || 33.5899"
+                            [initialLng]="bookRequest.longitude || -7.6039"
+                            [initialRadius]="10"
+                            [showMap]="true"
+                            (locationSelected)="onLocationSelected($event)">
+                          </app-map-picker>
+                        </div>
+                        <div class="mt-3">
+                          <button class="btn btn-sm btn-outline-secondary me-2" (click)="centerOnMe()">
+                            <i class="fas fa-location-arrow me-1"></i> My Location
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger" (click)="clearLocation()">
+                            <i class="fas fa-trash-alt me-1"></i> Clear Location
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Preview Column -->
+                    <div class="col-md-4">
+                      <div class="p-3">
+                        <h6 class="border-bottom pb-2 mb-3">
+                          <i class="fas fa-info-circle text-primary me-2"></i>
+                          Location Details
+                        </h6>
+                        
+                        <div *ngIf="!bookRequest.latitude || !bookRequest.longitude" class="text-center py-5">
+                          <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                          <p class="text-muted">Click on the map to select a location</p>
+                        </div>
+                        
+                        <div *ngIf="bookRequest.latitude && bookRequest.longitude">
+                          <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Address</label>
+                            <p class="mb-2">{{ bookRequest.fullAddress || 'No address available' }}</p>
+                            
+                            <label class="form-label small text-muted mb-1 d-block">Coordinates</label>
+                            <div class="d-flex gap-2 mb-3">
+                              <div class="flex-grow-1">
+                                <input type="text" class="form-control form-control-sm" 
+                                       [value]="bookRequest.latitude | number:'1.6-6'" readonly>
+                              </div>
+                              <div class="flex-grow-1">
+                                <input type="text" class="form-control form-control-sm" 
+                                       [value]="bookRequest.longitude | number:'1.6-6'" readonly>
+                              </div>
+                            </div>
+                            
+
+                            <a *ngIf="bookRequest.latitude && bookRequest.longitude" 
+                               [href]="'https://www.google.com/maps/dir//' + bookRequest.latitude + ',' + bookRequest.longitude + '/@' + bookRequest.latitude + ',' + bookRequest.longitude + ',15z'"
+                               target="_blank"
+                               class="btn btn-sm btn-outline-primary w-100">
+                              <i class="fas fa-directions me-1"></i> Get Directions
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer bg-light">
+                  <button type="button" class="btn btn-light" (click)="clearLocation()">
+                    <i class="fas fa-trash-alt me-1"></i> Clear
+                  </button>
+                  <div class="ms-auto">
+                    <button type="button" class="btn btn-light me-2" (click)="closeLocationModal()">
+                      <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="closeLocationModal()">
+                      <i class="fas fa-check me-1"></i> Confirm Location
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-backdrop fade show" *ngIf="showLocationModal"></div>
         </div>
         <div class="col-12">
           <label for="synopsis" class="form-label">Product Details</label>

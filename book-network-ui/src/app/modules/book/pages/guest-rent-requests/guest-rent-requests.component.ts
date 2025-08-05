@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { BookService } from '../../../../services/services/book.service';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-guest-rent-requests',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe],
   templateUrl: './guest-rent-requests.component.html',
-  styleUrl: './guest-rent-requests.component.scss'
+  styleUrls: ['./guest-rent-requests.component.scss']
 })
 export class GuestRentRequestsComponent implements OnInit {
   requests: any[] = [];

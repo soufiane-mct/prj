@@ -87,7 +87,10 @@
                   <small class="text-muted d-block">ID: {{ user.id }}</small>
                 </div>
               </td>
-              <td>{{ user.email }}</td>
+              <td>
+                {{ user.email }}
+                <span *ngIf="isCurrentUser(user)" class="badge bg-primary ms-2">Current User</span>
+              </td>
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(user.status)">
                   {{ user.status }}
@@ -103,7 +106,7 @@
                 <small class="text-muted">Modified: {{ user.lastModifiedDate | date:'short' }}</small>
               </td>
               <td>
-                <div class="action-buttons">
+                <div class="action-buttons" *ngIf="!isCurrentUser(user)">
                   <button 
                     *ngIf="getUserActions(user).includes('approve')"
                     class="btn btn-success btn-sm" 
@@ -117,10 +120,14 @@
                     <i class="fas fa-ban"></i> Block
                   </button>
                   <button 
+                    *ngIf="getUserActions(user).includes('delete')"
                     class="btn btn-danger btn-sm" 
                     (click)="deleteUser(user.id)">
                     <i class="fas fa-trash"></i> Delete
                   </button>
+                </div>
+                <div *ngIf="isCurrentUser(user)" class="text-muted small">
+                  Actions not available for current user
                 </div>
               </td>
             </tr>

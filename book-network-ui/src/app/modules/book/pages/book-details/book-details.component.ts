@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterModule, Router } from '@angular/router';
 import { BookResponse } from '../../../../services/models/book-response';
 import { PageResponseFeedbackResponse } from '../../../../services/models/page-response-feedback-response';
@@ -9,45 +9,111 @@ import { FormsModule } from '@angular/forms';
 import { RatingComponent } from '../../components/rating/rating.component';
 import { TokenService } from '../../../../services/token/token.service';
 import { GuestRentModalComponent } from '../../components/book-card/guest-rent-modal.component';
+import { MapPickerComponent, LocationData } from '../../../../shared/components/map-picker/map-picker.component';
+import { LocationService } from '../../../../shared/services/location.service';
 
 @Component({
   selector: 'app-book-details',
-  imports: [CommonModule, FormsModule,RouterModule, RatingComponent, GuestRentModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    RouterModule, 
+    RatingComponent, 
+    GuestRentModalComponent,
+    MapPickerComponent
+  ],
   templateUrl: './book-details.component.html',
   styleUrl: './book-details.component.scss'
 })
 export class BookDetailsComponent implements OnInit {
   book: BookResponse = {};
+  showLocationModal = false;
   feedbacks: PageResponseFeedbackResponse = {};
   page = 0;
   size = 5;
   pages: any = [];
   private bookId = 0;
-  guestModalVisible = false;
+  private _guestModalVisible = false;
+  get guestModalVisible(): boolean {
+    return this._guestModalVisible;
+  }
+  set guestModalVisible(value: boolean) {
+    this._guestModalVisible = value;
+  }
   guestModalBookTitle = '';
   showSuccessNotification = false;
   successMessage = '';
+  resolvedAddress: string | null = null;
+  isResolvingAddress = false;
+
+  @ViewChild('mapPicker') mapPicker!: MapPickerComponent;
+  
+  // Default coordinates (Rabat, Morocco)
+  defaultLocation: LocationData = {
+    lat: 34.0209,
+    lng: -6.8416,
+    zoom: 12
+  };
+  
+  get bookLocation(): LocationData {
+    if (!this.book || this.book.latitude === undefined || this.book.longitude === undefined) {
+      return this.defaultLocation;
+    }
+    
+    return {
+      lat: this.book.latitude,
+      lng: this.book.longitude,
+      zoom: 15,
+      address: this.book.fullAddress || this.book.location || '',
+      displayName: this.book.location || 'Product Location'
+    };
+  }
 
   constructor(
     private bookService: BookService,
     private feedbackService: FeedbackService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private locationService: LocationService,
+    private cdr: ChangeDetectorRef
   ) {
   }
   
   ngOnInit(): void {
+    console.log('BookDetailsComponent initialized');
+    
+    // Ensure all modals are closed when component initializes
+    this.closeAllModals();
+    
     this.bookId = this.activatedRoute.snapshot.params['bookId'];
     if (this.bookId) {
+      console.log('Fetching book with ID:', this.bookId);
       this.bookService.findBookById({
         'book-id': this.bookId
       }).subscribe({
         next: (book) => {
           this.book = book;
+          this.resolveBookAddress();
           this.findAllFeedbacks();
         }
       });
+    }
+  }
+
+  private resolveBookAddress() {
+    // If fullAddress is present, use it. Otherwise, try to resolve from coordinates.
+    if (this.book.fullAddress) {
+      this.resolvedAddress = this.book.fullAddress;
+    } else if (this.book.latitude != null && this.book.longitude != null) {
+      this.isResolvingAddress = true;
+      this.locationService.getAddressFromCoordinates(this.book.latitude, this.book.longitude).subscribe(addr => {
+        this.resolvedAddress = addr;
+        this.isResolvingAddress = false;
+        this.cdr.markForCheck();
+      });
+    } else {
+      this.resolvedAddress = null;
     }
   }
 
@@ -90,7 +156,10 @@ export class BookDetailsComponent implements OnInit {
   }
 
   onBorrow() {
-    if (!this.tokenService.token) {
+    const isLoggedIn = this.tokenService.isLogged();
+    console.log('onBorrow called, isLoggedIn:', isLoggedIn);
+    if (!isLoggedIn) {
+      console.log('User not logged in, showing guest modal');
       this.guestModalVisible = true;
       this.guestModalBookTitle = this.book.title || '';
       return;
@@ -115,6 +184,12 @@ export class BookDetailsComponent implements OnInit {
   }
 
   onGuestRentModalClose() {
+    console.log('onGuestRentModalClose called');
+    this.resetGuestModalState();
+  }
+
+  private resetGuestModalState(): void {
+    console.log('Resetting guest modal state');
     this.guestModalVisible = false;
     this.guestModalBookTitle = '';
   }
@@ -177,4 +252,58 @@ export class BookDetailsComponent implements OnInit {
     return this.page === this.feedbacks.totalPages as number - 1;
   }
 
+  private closeAllModals() {
+    console.log('Closing all modals');
+    this.showLocationModal = false;
+    this.guestModalVisible = false;
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+
+  closeLocationModal() {
+    this.showLocationModal = false;
+    // Remove any added padding
+    document.body.style.paddingRight = '';
+    document.body.classList.remove('modal-open');
+  }
+
+  openLocationModal() {
+    this.showLocationModal = true;
+    this.resolveBookAddress(); // Always resolve when opening modal
+    
+    // Ensure the map is properly initialized with the book's location
+    if (this.mapPicker && this.book) {
+      // Use setTimeout to ensure the modal is fully rendered before initializing the map
+      setTimeout(() => {
+        if (this.book.latitude && this.book.longitude) {
+          this.mapPicker.centerMap(this.book.latitude, this.book.longitude, this.book.location || 'Book Location');
+        }
+      }, 100);
+    }
+  }
+  
+  // Handle click on modal backdrop
+  onBackdropClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('location-modal')) {
+      this.closeLocationModal();
+    }
+  }
+
+  onLocationSelected(event: { latitude: number; longitude: number; radius: number } | null) {
+    if (event) {
+      console.log('Location selected:', event);
+      // Update the book's location if needed
+      this.book.latitude = event.latitude;
+      this.book.longitude = event.longitude;
+    }
+  }
+
+  openLocationModalWithScrollbarFix() {
+    this.openLocationModal();
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+  }
 }

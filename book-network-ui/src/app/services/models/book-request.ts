@@ -5,9 +5,12 @@
 export interface BookRequest {
   authorName: string;
   id?: number;
-  isbn: string;
+  location: string;
   shareable?: boolean;
   synopsis: string;
   title: string;
   categoryId?: number;
+  latitude?: number;
+  longitude?: number;
+  fullAddress?: string;
 }

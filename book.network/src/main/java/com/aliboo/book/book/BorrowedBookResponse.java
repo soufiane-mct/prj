@@ -12,7 +12,7 @@ public class BorrowedBookResponse {
     private Integer id;
     private String title;
     private String authorName;
-    private String isbn;
+    private String location;
     private String synopsis;
     private double rate;
     private boolean returned;//nshofo wsh rj3 lbook wl no

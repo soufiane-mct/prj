@@ -44,9 +44,11 @@
         <i class="fas fa-dollar-sign text-info"></i>
         <span class="detail-text">{{ book.authorName }} DH</span>
       </div>
-      <div class="detail-item">
-        <i class="fas fa-map-marker-alt text-success"></i>
-        <span class="detail-text"><strong>Location:</strong> {{ book.isbn }}</span>
+      <div class="detail-item location-item" *ngIf="book.location || (book.latitude && book.longitude)" [title]="formattedLocation">
+        <i class="fas fa-map-marker-alt text-primary"></i>
+        <span class="detail-text location-text">
+          {{ formattedLocation }}
+        </span>
       </div>
       <div class="detail-item">
         <i class="fas fa-user text-success"></i>

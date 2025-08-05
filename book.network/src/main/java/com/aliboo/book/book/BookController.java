@@ -8,6 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.aliboo.book.common.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
+import com.aliboo.book.user.User;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/books")
@@ -15,6 +20,43 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Book")
 public class BookController {
     private final BookService service;
+    private final BookRepository bookRepository;
+
+    @GetMapping("/filter-by-location")
+    public ResponseEntity<PageResponse<BookResponse>> filterByLocation(
+        @RequestParam(name = "location", required = false) String location,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(service.filterByLocation(location, page, size));
+    }
+    
+    @GetMapping("/debug/geolocation")
+    public ResponseEntity<?> debugGeolocationQuery(
+        @RequestParam(name = "lat") double lat,
+        @RequestParam(name = "lng") double lng,
+        Authentication authentication
+    ) {
+        try {
+            Integer userId = null;
+            if (authentication != null && authentication.getPrincipal() != null) {
+                userId = ((User) authentication.getPrincipal()).getId();
+            }
+            List<Object[]> results = bookRepository.debugGeolocationQuery(lat, lng, userId);
+            return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "count", results.size(),
+                "data", results.stream().map(Arrays::toString).collect(Collectors.toList())
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "error",
+                "message", e.getMessage(),
+                "cause", e.getCause() != null ? e.getCause().getMessage() : "No cause"
+            ));
+        }
+    }
+
 
     //hna andiro save book
     @PostMapping
@@ -35,23 +77,57 @@ public class BookController {
 
     //hna find all books (manjibohomsh kmlin f d9a whda ms 3an tari9 pageing)
     @GetMapping
-    public ResponseEntity<PageResponse<BookResponse>> findAllBooks( //PageResponse drnaha fl common drna fiha vars dl pages o wst l pages anjibo all books on9smohom ela l pages li endna
-            @RequestParam(name = "page", defaultValue = "0", required = false) int page ,//kna default page hia 0 lihia page lwla ead user ybda ybdl pages
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size ,//hna size dl pages ktshd 0 - 10 (5-15..)
-            //hna anjibo all books mn users kherin exepte l connected user o andiro method khra find all books by owner
+    public ResponseEntity<PageResponse<BookResponse>> findAllBooks(
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(name = "location", required = false) String location,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "lat", required = false) Double lat,
+            @RequestParam(name = "lng", required = false) Double lng,
+            @RequestParam(name = "radius", required = false) Double radius,
             Authentication connectedUser
     ) {
-        return ResponseEntity.ok(service.findAllBooks(page, size, connectedUser));
+        // Validate that if lat or lng is provided, the other must also be provided
+        if ((lat != null && lng == null) || (lat == null && lng != null)) {
+            throw new IllegalArgumentException("Both latitude and longitude must be provided together");
+        }
+        
+        // If coordinates are provided, radius is required
+        if (lat != null && lng != null && (radius == null || radius <= 0)) {
+            throw new IllegalArgumentException("A positive radius in kilometers is required when using coordinates");
+        }
+        
+        // Ensure page and size are within reasonable bounds
+        int validatedPage = Math.max(0, page);
+        int validatedSize = Math.min(50, Math.max(1, size)); // Limit page size to 50
+        
+        return ResponseEntity.ok(service.findAllBooks(
+            validatedPage, 
+            validatedSize, 
+            location, 
+            search, 
+            categoryId, 
+            lat, 
+            lng, 
+            radius, 
+            connectedUser
+        ));
     }
     //hna an fetshiw all books by owner
     @GetMapping("/owner")
     public ResponseEntity<PageResponse<BookResponse>> findAllBooksByOwner(
-            @RequestParam(name = "page", defaultValue = "0", required = false) int page ,//kna default page hia 0 lihia page lwla ead user ybda ybdl pages
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size ,//hna size dl pages ktshd 0 - 10 (5-15..)
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page, //kna default page hia 0 lihia page lwla ead user ybda ybdl pages
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size, //hna size dl pages ktshd 0 - 10 (5-15..)
+            @RequestParam(name = "location", required = false) String location,
+            @RequestParam(name = "lat", required = false) Double lat,
+            @RequestParam(name = "lng", required = false) Double lng,
+            @RequestParam(name = "radius", required = false) Double radius,
             Authentication connectedUser
     ) {
-        return ResponseEntity.ok(service.findAllBooksByOwner(page, size, connectedUser));
+        return ResponseEntity.ok(service.findAllBooksByOwner(page, size, location, lat, lng, radius, connectedUser));
     }
+
 
     //hna bch user yshof l borrowed book li kheda (l user fsh aybda ya khd l books o ydir lihom borrow)
     @GetMapping("/borrowed")

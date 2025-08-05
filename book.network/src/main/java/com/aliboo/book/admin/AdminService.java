@@ -70,7 +70,7 @@ public void deleteUser(Integer userId) {
             .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
 
     // 1. Retrieve all books owned by the user
-    java.util.List<com.aliboo.book.book.Book> books = bookRepository.findByOwner_Id(userId);
+    java.util.List<com.aliboo.book.book.Book> books = bookRepository.findByOwnerId(userId, org.springframework.data.domain.Pageable.unpaged()).getContent();
 
     // 2. For each book, delete dependent entities
     for (com.aliboo.book.book.Book book : books) {

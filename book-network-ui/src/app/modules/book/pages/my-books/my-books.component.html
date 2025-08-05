@@ -1,30 +1,41 @@
-<h3>My Products list</h3>
-<hr>
-<div class="mb-4 d-flex flex-wrap align-items-end gap-3 bg-light p-3 rounded shadow-sm">
-  <div class="d-flex flex-column">
-    <label for="categoryFilter" class="form-label fw-semibold mb-1">Filter by Category:</label>
-    <select id="categoryFilter" class="form-select stylish-input w-auto min-w-200"
-            [(ngModel)]="selectedCategoryId"
-            (change)="onCategoryChange()">
-      <option [ngValue]="undefined">All Categories</option>
-      <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
-    </select>
-  </div>
-  <div class="d-flex flex-column">
-    <label for="searchInput" class="form-label fw-semibold mb-1">Search by Name:</label>
-    <input id="searchInput" type="text" class="form-control stylish-input w-auto min-w-200"
-           [(ngModel)]="searchTerm" placeholder="Enter product name" />
-  </div>
-  <div class="d-flex align-items-end">
-    <button class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" type="button" (click)="onSearch()">
-      <i class="fas fa-filter me-2"></i>
-      Search
+<div class="simple-header">
+  <h1>My Products</h1>
+  <p>Manage your shared products and view their status</p>
+  
+  <div class="filters">
+    <div class="filter-group">
+      <label>Filter by Category</label>
+      <select [(ngModel)]="selectedCategoryId" (change)="onSearch()" class="form-control">
+        <option [ngValue]="undefined">All Categories</option>
+        <option *ngFor="let category of categories" [ngValue]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Search by Name</label>
+      <input type="text" class="form-control" 
+             [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" 
+             placeholder="Enter product name">
+    </div>
+
+    <div class="filter-group">
+      <label>Filter by Location</label>
+      <div class="location-input" (click)="openLocationModal()">
+        <span>{{ locationDisplay() || 'Selected location' }}</span>
+      </div>
+    </div>
+    
+    <button class="btn btn-primary" (click)="onSearch()">
+      <i class="bi bi-funnel-fill"></i> Search
     </button>
   </div>
 </div>
-<div class="d-flex justify-content-end mb-3">
-  <a routerLink="/products/manage" class="btn btn-outline-primary">
-    <i class="fas fa-plus"></i>&nbsp;New Product
+
+<div class="d-flex justify-content-end mb-4">
+  <a routerLink="/products/manage" class="btn btn-primary">
+    <i class="fas fa-plus"></i> New Product
   </a>
 </div>
 <div class="success-notification" *ngIf="showSuccessNotification">
@@ -68,15 +79,39 @@
     </div>
   </div>
 </div>
+<!-- Location Picker Modal -->
+<div class="modal-backdrop" *ngIf="showLocationModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Location</h5>
+        <button type="button" class="btn-close" (click)="closeLocationModal()"></button>
+      </div>
+      <div class="modal-body">
+        <app-map-picker
+          [initialLat]="filterLat || 34.0209"
+          [initialLng]="filterLng || -6.8416"
+          [initialRadius]="filterRadius || 10"
+          (locationSelected)="onLocationSelected($event)"
+          [showMap]="true"
+        ></app-map-picker>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="clearLocation()">Clear Location</button>
+        <button type="button" class="btn btn-primary" (click)="applyLocationFilter()">Apply Filter</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="d-flex justify-content-start gap-4 flex-wrap">
   <app-book-card
     *ngFor="let book of filteredBooks"
     [book]="book"
     [manage]="true"
-    (archive)="archiveBook($event)"
-    (share)="shareBook($event)"
-    (edit)="editBook($event)"
-    (delete)="openDeleteModal($event)"
+    (archive)="archiveBook(book)"
+    (share)="shareBook(book)"
+    (edit)="editBook(book)"
+    (delete)="openDeleteModal(book)"
   ></app-book-card>
 </div>
 <div class="d-flex justify-content-center mt-3">

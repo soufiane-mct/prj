@@ -1,0 +1,111 @@
+<div class="map-picker">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ errorMessage }}</span>
+    <button (click)="errorMessage = null" class="close-btn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <!-- Map Container -->
+  <div class="map-container" [class.collapsed]="!showMap">
+    <!-- Loading Overlay -->
+    <div *ngIf="!isMapInitialized || isLoading" class="loading-overlay">
+      <div class="spinner">
+        <div class="double-bounce1"></div>
+        <div class="double-bounce2"></div>
+      </div>
+      <p class="loading-text">Loading map...</p>
+      <button *ngIf="!isLoading && errorMessage" 
+              (click)="retryMapInitialization()" 
+              class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> Retry
+      </button>
+    </div>
+    
+    <!-- Map Element -->
+    <div #mapContainer class="map" [hidden]="!isMapInitialized"></div>
+    
+    <!-- Map Controls -->
+    <div class="map-controls" *ngIf="isMapInitialized && showSearchControls">
+      <!-- Search Box -->
+      <div class="search-container">
+        <div class="search-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (keyup.enter)="onSearch()" 
+          placeholder="Search for a location..."
+          [disabled]="!isMapInitialized || isLoading"
+          #searchInput
+        >
+        <button 
+          (click)="onSearch()" 
+          [disabled]="!searchQuery.trim() || isLoading"
+          class="search-btn"
+          [class.searching]="isLoading"
+        >
+          <span *ngIf="!isLoading">Search</span>
+          <i *ngIf="isLoading" class="fas fa-circle-notch fa-spin"></i>
+        </button>
+      </div>
+
+      <!-- Radius Control -->
+      <div class="radius-control" *ngIf="showRadiusControl">
+        <div class="radius-input">
+          <label>Radius</label>
+          <input 
+            type="number" 
+            [ngModel]="radius" 
+            (ngModelChange)="onRadiusChange($event)"
+            min="0.1" 
+            max="100"
+            step="0.1"
+            [disabled]="!selectedLocation"
+          >
+          <span class="unit">{{ useMiles ? 'mi' : 'km' }}</span>
+        </div>
+        <button (click)="toggleUnit()" class="unit-toggle">
+          {{ useMiles ? 'Use km' : 'Use mi' }}
+        </button>
+      </div>
+
+      <!-- Location Button -->
+      <button 
+        (click)="centerOnUserLocation()" 
+        [disabled]="!mapInitialized || isLoading"
+        class="locate-me"
+        title="Find my location"
+      >
+        <i class="fas fa-location-arrow"></i>
+        <span class="sr-only">My Location</span>
+      </button>
+    </div>
+
+    <!-- Location Info -->
+    <div class="location-info" *ngIf="isMapInitialized && selectedLocation">
+      <div class="location-details">
+        <i class="fas fa-map-marker-alt"></i>
+        <div class="location-text">
+          <div class="location-name">
+            {{ selectedLocation.displayName || (selectedLocation.lat + ', ' + selectedLocation.lng) }}
+          </div>
+          <div class="location-coords">
+            <span *ngIf="radius">{{ radius }} {{ useMiles ? 'mi' : 'km' }} radius</span>
+          </div>
+        </div>
+      </div>
+      <button class="clear-location" (click)="clearLocation()" title="Clear location">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Map Attribution (required by OSM) -->
+    <div class="map-attribution" *ngIf="isMapInitialized">
+      © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors
+    </div>
+  </div>
+</div>

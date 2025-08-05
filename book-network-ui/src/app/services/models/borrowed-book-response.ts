@@ -5,7 +5,7 @@
 export interface BorrowedBookResponse {
   authorName?: string;
   id?: number;
-  isbn?: string;
+  location?: string;
   rate?: number;
   returnApproved?: boolean;
   returned?: boolean;

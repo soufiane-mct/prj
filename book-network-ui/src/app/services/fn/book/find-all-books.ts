@@ -13,6 +13,12 @@ import { PageResponseBookResponse } from '../../models/page-response-book-respon
 export interface FindAllBooks$Params {
   page?: number;
   size?: number;
+  location?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+  search?: string;
+  categoryId?: number;
 }
 
 export function findAllBooks(http: HttpClient, rootUrl: string, params?: FindAllBooks$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseBookResponse>> {
@@ -20,6 +26,22 @@ export function findAllBooks(http: HttpClient, rootUrl: string, params?: FindAll
   if (params) {
     rb.query('page', params.page, {});
     rb.query('size', params.size, {});
+    if (params.location) {
+      rb.query('location', params.location, {});
+    }
+    if (params.lat !== undefined && params.lng !== undefined) {
+      rb.query('lat', params.lat, {});
+      rb.query('lng', params.lng, {});
+      if (params.radius !== undefined) {
+        rb.query('radius', params.radius, {});
+      }
+    }
+    if (params.search) {
+      rb.query('search', params.search, {});
+    }
+    if (params.categoryId) {
+      rb.query('categoryId', params.categoryId, {});
+    }
   }
 
   return http.request(

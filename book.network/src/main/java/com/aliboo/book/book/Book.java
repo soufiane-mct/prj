@@ -27,7 +27,10 @@ public class Book extends BaseEntity { //l book kiyrit mn baseEntity (ayrit mno 
 
     private String title;
     private String authorName;
-    private String isbn; //hadi andiro fiha lbook number (identificaier)
+    private String location; // Morocco city for the book (short name)
+    private String fullAddress; // Full human-readable address (e.g., Rocade Express de Rabat, El Youssoufia, ...)
+    private Double latitude; // latitude for geolocation
+    private Double longitude; // longitude for geolocation
     private String synopsis ;//resumer dl book
     private String bookCover; //pic dl book (ma andirohash f database bch matakhdsh espace andiroha f location f server)
     private boolean archived;

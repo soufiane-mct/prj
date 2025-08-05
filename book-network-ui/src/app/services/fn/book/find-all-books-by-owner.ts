@@ -13,6 +13,10 @@ import { PageResponseBookResponse } from '../../models/page-response-book-respon
 export interface FindAllBooksByOwner$Params {
   page?: number;
   size?: number;
+  location?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 export function findAllBooksByOwner(http: HttpClient, rootUrl: string, params?: FindAllBooksByOwner$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseBookResponse>> {
@@ -20,6 +24,16 @@ export function findAllBooksByOwner(http: HttpClient, rootUrl: string, params?: 
   if (params) {
     rb.query('page', params.page, {});
     rb.query('size', params.size, {});
+    if (params.location) {
+      rb.query('location', params.location, {});
+    }
+    if (params.lat !== undefined && params.lng !== undefined) {
+      rb.query('lat', params.lat, {});
+      rb.query('lng', params.lng, {});
+      if (params.radius !== undefined) {
+        rb.query('radius', params.radius, {});
+      }
+    }
   }
 
   return http.request(

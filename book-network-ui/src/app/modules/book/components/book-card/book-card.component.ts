@@ -1,9 +1,10 @@
-import { Component,EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BookResponse } from '../../../../services/models/book-response';
 import { CommonModule } from '@angular/common';
 import { RatingComponent } from "../rating/rating.component";
 import { GuestRentModalComponent } from './guest-rent-modal.component';
 import { TokenService } from '../../../../services/token/token.service';
+import { LocationService } from '../../../../shared/services/location.service';
 
 @Component({
   selector: 'app-book-card',
@@ -16,14 +17,28 @@ export class BookCardComponent {
   private _manage = false;
   private _bookCover: string | undefined;
 
-  constructor(private tokenService: TokenService) {}
+  constructor(
+    private tokenService: TokenService,
+    private locationService: LocationService
+  ) {}
 
   get bookCover(): string | undefined {
     if (this._book.cover) {
-      //hdi d book cover
-      return 'data:image/jpg;base64,' + this._book.cover
+      return 'data:image/jpg;base64,' + this._book.cover;
     }
     return 'https://source.unsplash.com/user/c_v_r/1900x800';
+  }
+
+  get formattedLocation(): string {
+    if (!this._book) return '';
+    
+    return this.locationService.formatLocation({
+      latitude: this._book.latitude,
+      longitude: this._book.longitude,
+      fullAddress: this._book.fullAddress,
+      address: this._book.location,
+      locationName: this._book.location
+    });
   }
 
   get book(): BookResponse {

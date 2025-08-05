@@ -15,7 +15,10 @@ public class BookMapper {
         builder.id(request.id())
                 .title(request.title())
                 .authorName(request.authorName())
-                .isbn(request.isbn())
+                .location(request.location())
+                .fullAddress(request.fullAddress())
+                .latitude(request.latitude())
+                .longitude(request.longitude())
                 .synopsis(request.synopsis())
                 .archived(false)//hna fsh ydir save mykonch bookfl archive talabgha yrdha true
                 .shareable(request.shareable());
@@ -28,15 +31,18 @@ public class BookMapper {
     public BookResponse toBookResponse(Book book) { //hna fin andiro getbook by id mn bookresponse lifiha data o an3iyto liha fl bookservice bch flkhr andiroha fl bookcontroller
         return BookResponse.builder()
                 .id(book.getId())
+                .location(book.getLocation())
+                .fullAddress(book.getFullAddress())
+                .latitude(book.getLatitude())
+                .longitude(book.getLongitude())
                 .title(book.getTitle())
                 .authorName(book.getAuthorName())
-                .isbn(book.getIsbn())
                 .synopsis(book.getSynopsis())
                 .rate(book.getRate())
                 .archived(book.isArchived())
                 .shareable(book.isShareable())
                 .owner(book.getOwner().fullName())
-                .cover(FileUtils.readFileFromLocation(book.getBookCover())) // read l file dl cover li aysifto l user 3an tari9 class li drna FileUtils
+                .cover(FileUtils.readFileFromLocation(book.getBookCover()))
                 .categoryName(book.getCategory() != null ? book.getCategory().getName() : null)
                 .build();
     }
@@ -46,7 +52,7 @@ public class BookMapper {
                 .id(history.getBook().getId()) //mn BookTransactionHistory dkhl l book o jib l id dyalo o dir lih build f BorrowedBookResponse 3an tari9 l function toBorrowedBookResponse o li ankhdmo biha f Bookservice
                 .title(history.getBook().getTitle())
                 .authorName(history.getBook().getAuthorName())
-                .isbn(history.getBook().getIsbn())
+                .location(history.getBook().getLocation())
                 .rate(history.getBook().getRate())
                 .returned(history.isReturned()) //hdo ra a mn BookTransactionHistory
                 .returnApproved(history.isReturnApproved())

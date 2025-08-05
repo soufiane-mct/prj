@@ -17,6 +17,32 @@ export class TokenService {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('token') as string;
     }
-    return ''; // or return null if preferred
+    return '';
+  }
+
+  isLogged(): boolean {
+    return !!this.token;
+  }
+
+  getRole(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      const token = this.token;
+      if (!token) return null;
+      
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.role || null;
+      } catch (e) {
+        console.error('Error decoding token', e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  clearToken(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+    }
   }
 }

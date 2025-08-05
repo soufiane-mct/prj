@@ -70,9 +70,63 @@
             <span class="meta-value">{{ book.categoryName }}</span>
           </div>
           <div class="meta-item">
-            <i class="fas fa-map-marker-alt text-success me-2"></i>
-            <strong>Location:</strong> {{ book.isbn }}
+            <button class="action-btn location-btn" (click)="openLocationModalWithScrollbarFix()">
+              <i class="fas fa-map-marker-alt"></i> Show Location
+            </button>
+          </div>
+
+          <!-- Location Modal -->
+          <div class="location-modal" [class.show]="showLocationModal" (click)="onBackdropClick($event)">
+            <div class="location-modal-backdrop"></div>
+            
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt text-success me-2"></i>Product Location
+                  </h5>
+                  <button type="button" class="close" (click)="closeLocationModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <div *ngIf="resolvedAddress || isResolvingAddress" class="mb-3">
+                    <h6 *ngIf="resolvedAddress">
+                      <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                      {{ resolvedAddress }}
+                    </h6>
+                    <div *ngIf="isResolvingAddress" class="text-muted">
+                      <i class="fas fa-spinner fa-spin me-2"></i> Resolving address...
+                    </div>
+                  </div>
+                  <div class="map-container">
+                    <app-map-picker 
+                      #mapPicker
+                      [initialLat]="bookLocation.lat"
+                      [initialLng]="bookLocation.lng"
+                      [initialRadius]="5"
+                      [showRadiusControl]="false"
+                      [showSearchControls]="false"
+                      [draggableMarker]="false"
+                      (locationSelected)="onLocationSelected($event)">
+                    </app-map-picker>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="closeLocationModal()">
+                    <i class="fas fa-times me-2"></i>Close
+                  </button>
+                  <a *ngIf="book.latitude && book.longitude" 
+                     [href]="'https://www.openstreetmap.org/directions?from=&to=' + book.latitude + ',' + book.longitude"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-primary">
+                    <i class="fas fa-directions me-2"></i>Get Directions
+                  </a>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
       </div>
 
@@ -112,9 +166,11 @@
     </div>
   </div>
 
-  <app-guest-rent-modal
+  <!-- Guest Rent Modal -->
+<app-guest-rent-modal
+    *ngIf="book.id"
     [show]="guestModalVisible"
-    [bookTitle]="guestModalBookTitle"
+    [bookTitle]="guestModalBookTitle || ''"
     (close)="onGuestRentModalClose()"
     (save)="onGuestRentModalSave($event)">
   </app-guest-rent-modal>

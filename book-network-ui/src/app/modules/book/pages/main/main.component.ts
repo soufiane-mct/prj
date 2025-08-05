@@ -1,14 +1,20 @@
 import { Component } from '@angular/core';
-import { MenuComponent } from "../../components/menu/menu.component";
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { TokenService } from '../../../../services/token/token.service';
+import { MenuComponent } from '../../components/menu/menu.component';
+import { RouterModule, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-main',
-  imports: [MenuComponent, RouterModule, CommonModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    RouterOutlet,
+    MenuComponent
+  ],
   templateUrl: './main.component.html',
-  styleUrl: './main.component.scss'
+  styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
   isAuthenticated = false;
@@ -17,7 +23,7 @@ export class MainComponent {
     this.checkAuthenticationStatus();
   }
 
-  checkAuthenticationStatus() {
+  private checkAuthenticationStatus(): void {
     this.isAuthenticated = !!this.tokenService.token;
   }
 }

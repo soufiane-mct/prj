@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
+import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { TokenService } from '../../../../services/token/token.service';
 import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [CommonModule, RouterModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, RouterOutlet],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })

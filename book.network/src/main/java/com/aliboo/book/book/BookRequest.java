@@ -15,13 +15,19 @@ public record BookRequest(//madrnash class eadia drnaha record o record ra ir ty
 
               @NotNull(message = "102")
               @NotEmpty(message = "102")
-              String isbn,
+              String location,
+              
+              @NotNull(message = "104")
+              @NotEmpty(message = "104")
+              String fullAddress,
 
               @NotNull(message = "103")
               @NotEmpty(message = "103")
               String synopsis,
 
               boolean shareable,
-              Integer categoryId
+              Integer categoryId,
+              Double latitude,
+              Double longitude
 ) {
 }
