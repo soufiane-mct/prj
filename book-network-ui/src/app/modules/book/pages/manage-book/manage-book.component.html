@@ -6,15 +6,73 @@
   </div>
   <div class="d-flex gap-2">
     <div class="col-3">
-      <img class="rounded-1" width="100%" height="100%" [src]=" selectedPicture || 'https://source.unsplash.com/user/c_v_r/1900x800'" alt="">
-      <div class="mt-2">
-        <input
-          (change)="onFileSelected($event)"
-          class="form-control"
-          type="file"
-          id="formFile"
-          accept="image/*"
-        >
+      <!-- Video Upload Section -->
+      <div class="card mb-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-video me-2"></i>Product Video</h6>
+        </div>
+        <div class="card-body p-2">
+          <div *ngIf="!videoPreview.preview" class="video-upload-placeholder">
+            <label for="videoFile" class="upload-label">
+              <i class="fas fa-video fa-2x mb-2"></i>
+              <span>Upload Video</span>
+              <small class="d-block text-muted mt-1">Max 100MB</small>
+            </label>
+          </div>
+          <div *ngIf="videoPreview.preview" class="video-preview-container">
+            <video [src]="videoPreview.preview" class="img-thumbnail w-100" controls></video>
+            <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" (click)="removeVideo()">
+              <i class="fas fa-trash me-1"></i> Remove Video
+            </button>
+          </div>
+          <input
+            (change)="onFileSelected($event, 'video')"
+            class="form-control d-none"
+            type="file"
+            id="videoFile"
+            accept="video/*"
+          >
+        </div>
+      </div>
+
+      <!-- Image Upload Section -->
+      <div class="card">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-images me-2"></i>Product Images ({{imagePreviews.length}}/5)</h6>
+        </div>
+        <div class="card-body p-2">
+          <!-- Image Preview Grid -->
+          <div class="image-preview-grid mb-2">
+            <div *ngFor="let img of imagePreviews; let i = index" class="image-preview-item" [class.main-image]="i === 0">
+              <img [src]="img.url || img.preview" class="img-thumbnail" alt="Preview">
+              <div class="main-badge" *ngIf="i === 0">Main</div>
+              <div class="image-actions">
+                <button type="button" class="btn btn-sm btn-outline-primary btn-action" (click)="setAsMain(i)" *ngIf="i !== 0" title="Set as main">
+                  <i class="fas fa-star"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-action" (click)="$event.stopPropagation(); removeImage(i)" title="Remove">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="imagePreviews.length < maxImages" class="image-preview-item add-more">
+              <label for="formFile" class="add-more-label">
+                <i class="fas fa-plus"></i>
+                <span>Add Image</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Hidden file input -->
+          <input
+            (change)="onFileSelected($event, 'images')"
+            class="form-control d-none"
+            type="file"
+            id="formFile"
+            accept="image/*"
+            multiple
+          >
+        </div>
       </div>
     </div>
     <div class="col-9">
@@ -199,6 +257,120 @@
 </div>
 
 <style>
+  .video-upload-placeholder {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background-color: #f8f9fa;
+  }
+
+  .video-upload-placeholder:hover {
+    border-color: #0d6efd;
+    background-color: #f0f7ff;
+  }
+
+  .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6c757d;
+  }
+
+  .video-preview-container {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .image-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+  }
+
+  .image-preview-item img, .image-preview-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-actions {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .btn-action {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0.8;
+  }
+
+  .btn-action:hover {
+    opacity: 1;
+  }
+
+  .main-badge {
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    background-color: #0d6efd;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+  }
+
+  .main-image {
+    border: 2px solid #0d6efd;
+  }
+
+  .add-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px dashed #6c757d;
+  }
+
+  .add-more:hover {
+    background-color: #e9ecef;
+    border-color: #0d6efd;
+  }
+
+  .add-more-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6c757d;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+  }
+
   .stylish-input {
     border-radius: 0.5rem;
     border: 1.5px solid #6366f1;

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterModule, Router } from '@angular/router';
 import { BookResponse } from '../../../../services/models/book-response';
 import { PageResponseFeedbackResponse } from '../../../../services/models/page-response-feedback-response';
@@ -27,6 +27,8 @@ import { LocationService } from '../../../../shared/services/location.service';
 })
 export class BookDetailsComponent implements OnInit {
   book: BookResponse = {};
+  bookImages: any[] = [];
+  currentImageIndex = 0;
   showLocationModal = false;
   feedbacks: PageResponseFeedbackResponse = {};
   page = 0;
@@ -47,6 +49,7 @@ export class BookDetailsComponent implements OnInit {
   isResolvingAddress = false;
 
   @ViewChild('mapPicker') mapPicker!: MapPickerComponent;
+  @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
   
   // Default coordinates (Rabat, Morocco)
   defaultLocation: LocationData = {
@@ -81,14 +84,11 @@ export class BookDetailsComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    console.log('BookDetailsComponent initialized');
-    
     // Ensure all modals are closed when component initializes
     this.closeAllModals();
     
     this.bookId = this.activatedRoute.snapshot.params['bookId'];
     if (this.bookId) {
-      console.log('Fetching book with ID:', this.bookId);
       this.bookService.findBookById({
         'book-id': this.bookId
       }).subscribe({
@@ -96,8 +96,16 @@ export class BookDetailsComponent implements OnInit {
           this.book = book;
           this.resolveBookAddress();
           this.findAllFeedbacks();
+          this.loadBookImages();
         }
       });
+    }
+  }
+
+  onVideoPlay() {
+    // Hide any poster image when video starts playing
+    if (this.videoPlayer) {
+      this.videoPlayer.nativeElement.style.objectFit = 'contain';
     }
   }
 
@@ -128,7 +136,7 @@ export class BookDetailsComponent implements OnInit {
         this.generatePages();
       },
       error: (error) => {
-        console.log('Could not load feedbacks:', error);
+        // Error loading feedbacks
         // Initialize empty feedbacks for guests
         this.feedbacks = {
           content: [],
@@ -157,9 +165,7 @@ export class BookDetailsComponent implements OnInit {
 
   onBorrow() {
     const isLoggedIn = this.tokenService.isLogged();
-    console.log('onBorrow called, isLoggedIn:', isLoggedIn);
     if (!isLoggedIn) {
-      console.log('User not logged in, showing guest modal');
       this.guestModalVisible = true;
       this.guestModalBookTitle = this.book.title || '';
       return;
@@ -184,12 +190,10 @@ export class BookDetailsComponent implements OnInit {
   }
 
   onGuestRentModalClose() {
-    console.log('onGuestRentModalClose called');
     this.resetGuestModalState();
   }
 
   private resetGuestModalState(): void {
-    console.log('Resetting guest modal state');
     this.guestModalVisible = false;
     this.guestModalBookTitle = '';
   }
@@ -299,7 +303,98 @@ export class BookDetailsComponent implements OnInit {
     }
   }
 
-  openLocationModalWithScrollbarFix() {
+  private loadBookImages() {
+    this.bookService.getBookImages({
+      bookId: this.bookId
+    }).subscribe({
+      next: (images: any[]) => {
+        // First load all images
+        if (images && images.length > 0) {
+          this.bookImages = images.map(img => ({
+            id: img.id,
+            imageUrl: this.getImageUrl(img.imageUrl || ''),
+            isCover: img.isCover,
+            isVideo: false
+          }));
+        } else if (this.book.cover) {
+          // Fallback to using the cover if no images are found
+          const cover = Array.isArray(this.book.cover) ? this.book.cover[0] : this.book.cover;
+          this.bookImages = [{
+            id: 0,
+            imageUrl: this.getImageUrl(cover),
+            isCover: true,
+            isVideo: false
+          }];
+        }
+        
+        // Add video as the last item if it exists (check both video and videoUrl properties)
+        const videoUrl = this.book.videoUrl || 
+                        (this.book.video && this.book.video.startsWith('pending_') 
+                          ? `http://localhost:8081/books/${this.bookId}/videos/${this.book.video.substring(8)}`
+                          : this.book.video);
+        
+        if (videoUrl) {
+          this.bookImages.push({
+            id: -1, // Special ID for video
+            videoUrl: videoUrl,
+            isVideo: true,
+            thumbnail: this.book.cover ? (Array.isArray(this.book.cover) ? this.book.cover[0] : this.book.cover) : ''
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error loading book images:', err);
+        // Fallback to using the cover if available
+        if (this.book.cover) {
+          const cover = Array.isArray(this.book.cover) ? this.book.cover[0] : this.book.cover;
+          this.bookImages = [{
+            id: 0,
+            imageUrl: this.getImageUrl(cover),
+            isCover: true
+          }];
+        }
+      }
+    });
+  }
+
+  private getImageUrl(url: string): string {
+    if (!url) return '';
+    
+    // If it's already a full URL, return as is
+    if (typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:image'))) {
+      return url;
+    }
+    
+    // If it's a relative path starting with /api, prepend the base URL
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+      return `http://localhost:8081${url}`;
+    }
+    
+    // If it's a base64 string without the data URL prefix, add it
+    if (typeof url === 'string' && !url.startsWith('data:image/')) {
+      return `data:image/jpg;base64,${url}`;
+    }
+    
+    return url;
+  }
+
+  nextImage(): void {
+    if (!this.bookImages || this.bookImages.length <= 1) return;
+    this.currentImageIndex = (this.currentImageIndex + 1) % this.bookImages.length;
+  }
+
+  prevImage(): void {
+    if (!this.bookImages || this.bookImages.length <= 1) return;
+    this.currentImageIndex = (this.currentImageIndex - 1 + this.bookImages.length) % this.bookImages.length;
+  }
+
+  goToImage(index: number): void {
+    if (this.bookImages && index >= 0 && index < this.bookImages.length) {
+      this.currentImageIndex = index;
+    }
+  }
+
+  openLocationModalWithScrollbarFix(): void {
     this.openLocationModal();
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     if (scrollbarWidth > 0) {

@@ -20,7 +20,17 @@ export class GuestRentModalComponent {
   location = '';
 
   onSave() {
-    this.save.emit({ fullName: this.fullName, phone: this.phone, location: this.location });
+    // Split the full name into first name and last name
+    const nameParts = this.fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    
+    this.save.emit({ 
+      name: firstName,
+      lastname: lastName,
+      phone: this.phone, 
+      location: this.location 
+    });
   }
 
   formatPhoneNumber(event: any) {

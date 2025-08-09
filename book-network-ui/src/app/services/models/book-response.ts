@@ -19,4 +19,6 @@ export interface BookResponse {
   latitude?: number;
   longitude?: number;
   fullAddress?: string;
+  video?: string;
+  videoUrl?: string;
 }

@@ -22,10 +22,22 @@ export class BookCardComponent {
     private locationService: LocationService
   ) {}
 
-  get bookCover(): string | undefined {
-    if (this._book.cover) {
-      return 'data:image/jpg;base64,' + this._book.cover;
+  get bookCover(): string {
+    if (this._book.cover && this._book.cover.length > 0) {
+      // If cover is an array, use the first image
+      const coverImage = Array.isArray(this._book.cover) ? this._book.cover[0] : this._book.cover;
+      
+      // If it's already a full URL, base64, or a relative path starting with /api, return as is
+      if (typeof coverImage === 'string' && 
+          (coverImage.startsWith('http') || 
+           coverImage.startsWith('data:image') || 
+           coverImage.startsWith('/api'))) {
+        return coverImage;
+      }
+      // Otherwise, assume it's a base64 string that needs the prefix
+      return 'data:image/jpg;base64,' + coverImage;
     }
+    // Default fallback image
     return 'https://source.unsplash.com/user/c_v_r/1900x800';
   }
 

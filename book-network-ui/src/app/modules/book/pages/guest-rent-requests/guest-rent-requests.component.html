@@ -22,16 +22,39 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let req of requests; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ req.book?.title }}</td>
-            <td>{{ req.name }} {{ req.lastname }}</td>
-            <td>{{ req.phone }}</td>
-            <td>{{ req.location }}</td>
-            <td>{{ req.createdDate | date:'medium' }}</td>
+          <tr *ngFor="let req of requests; let i = index" class="align-middle">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>
+              <div class="fw-medium">{{ req.bookTitle || 'N/A' }}</div>
+              <small class="text-muted" *ngIf="req.bookAuthor">{{ req.bookAuthor }}</small>
+            </td>
+            <td>
+              <div *ngIf="req.name || req.lastname">
+                {{ req.name || '' }} {{ req.lastname || '' }}
+              </div>
+              <span *ngIf="!req.name && !req.lastname" class="text-muted">Not provided</span>
+            </td>
+            <td>
+              <a *ngIf="req.phone; else noPhone" [href]="'tel:' + req.phone">
+                {{ req.phone }}
+              </a>
+              <ng-template #noPhone>
+                <span class="text-muted">N/A</span>
+              </ng-template>
+            </td>
+            <td>
+              <span [title]="req.location || 'No location provided'" class="text-truncate d-inline-block" style="max-width: 200px;">
+                {{ req.location || 'N/A' }}
+              </span>
+            </td>
+            <td>
+              <span [title]="req.createdDate">
+                {{ req.createdDate ? (req.createdDate | date:'medium') : 'N/A' }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-</div> 
+</div>

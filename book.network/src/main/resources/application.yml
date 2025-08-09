@@ -16,6 +16,15 @@
 
 #5433
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+      file-size-threshold: 10MB
+      location: ${java.io.tmpdir}
+      resolve-lazily: false
+  
   datasource:
     url: jdbc:postgresql://localhost:5432/RentProduct
     username: postgres
@@ -77,10 +86,6 @@ application:
   file:
     upload:
       photos-output-path: ./uploads  #y3ni aykon endna file smito uploads li andiro fih tsawr o ankhdmo biha f filestorageservice
-
-servlet:
-     multipart:
-       max-file-size: 50MB #hna andiro file cover picture ytkhsno hna fl files li andiro mshi f data base max dhd l file (ra atl9a dossier file 3antari9o andiro fih hdshi) ykon 50M
 
 
 server:

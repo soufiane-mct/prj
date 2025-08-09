@@ -1,5 +1,6 @@
 package com.aliboo.book.book;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,13 +8,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.aliboo.book.common.PageResponse;
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+import com.aliboo.book.exception.OperationNotPermitedException;
 import com.aliboo.book.user.User;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
@@ -212,6 +220,53 @@ public class BookController {
         service.uploadBookCoverPicture(file, connectedUser, bookId);
         return ResponseEntity.accepted().build();
     }
+    
+    @Operation(summary = "Upload a video for a book")
+    @PostMapping(
+        value = "/{bookId}/video/upload",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> uploadBookVideo(
+            @PathVariable("bookId") Integer bookId,
+            @RequestParam("file") MultipartFile file,
+            Authentication connectedUser
+    ) {
+        log.info("=== VIDEO UPLOAD REQUEST FOR BOOK ID: {} ===", bookId);
+        
+        // Validate the file
+        if (file == null || file.isEmpty()) {
+            log.error("Upload failed: No file provided or file is empty");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "No file provided or file is empty"));
+        }
+        
+        // Log file details
+        log.info("Video file: {}", file.getOriginalFilename());
+        log.info("Content type: {}", file.getContentType());
+        log.info("File size: {} bytes", file.getSize());
+        
+        try {
+            service.uploadBookVideo(file, connectedUser, bookId);
+            log.info("Successfully uploaded video for book ID: {}", bookId);
+            return ResponseEntity.accepted().build();
+            
+        } catch (EntityNotFoundException e) {
+            log.error("Book not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+                    
+        } catch (OperationNotPermitedException e) {
+            log.error("Operation not permitted: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+                    
+        } catch (Exception e) {
+            log.error("Error uploading video: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to upload video: " + e.getMessage()));
+        }
+    }
 
     @GetMapping("/cover/{book-id}")
     public ResponseEntity<byte[]> getBookCover(@PathVariable("book-id") Integer bookId) {
@@ -240,4 +295,3 @@ public class BookController {
     }
 
 }
-

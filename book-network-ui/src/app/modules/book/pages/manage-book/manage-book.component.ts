@@ -8,6 +8,7 @@ import { CategoryService, Category } from '../../../../services/services/categor
 import { Location as NgLocation } from '@angular/common';
 import { SharedModule } from '../../../../shared/shared.module';
 import { LocationService, LocationData } from '../../../../shared/services/location.service';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-manage-book',
@@ -32,9 +33,14 @@ export class ManageBookComponent implements OnInit {
     longitude: undefined,
     fullAddress: ''
   };
-  selectedBookCover: any;
-  selectedPicture: string | undefined;
+  selectedBookCovers: File[] = [];
+  selectedVideo: File | null = null;
+  // Store both previews and uploaded image URLs
+  imagePreviews: {preview: string, url: string | null, type: 'image' | 'video'}[] = [];
+  videoPreview: {preview: string, url: string | null, file: File | null} = { preview: '', url: null, file: null } as const;
   categories: Category[] = [];
+  maxImages = 5;
+  maxVideoSizeMB = 100; // 100MB max video size
 
   // Format location for display
   formatLocation(): string {
@@ -321,60 +327,441 @@ export class ManageBookComponent implements OnInit {
           
           // Set the book cover if it exists
           if (book.cover) {
-            this.selectedPicture = 'data:image/jpg;base64,' + book.cover;
+            this.imagePreviews = [{
+              preview: 'data:image/jpg;base64,' + book.cover,
+              url: null,
+              type: 'image' as const
+            }];
           }
         }
       });
     }
   }
 
+  // Add this property to track loading state
+  isLoading = false;
+
   saveBook(): void {
-    if (!this.bookRequest) {
-      this.errorMsg = ['Invalid book data'];
+    this.errorMsg = [];
+    this.isLoading = true;
+    
+    console.log('Starting saveBook...');
+    console.log('Selected video:', this.selectedVideo);
+    console.log('Selected book covers:', this.selectedBookCovers);
+    
+    // Check if we have a location
+    if ((!this.bookRequest.latitude || !this.bookRequest.longitude) && !this.bookRequest.location) {
+      console.log('No location provided');
+      this.errorMsg = ['Please select a location for your book.'];
+      this.isLoading = false;
       return;
     }
-
-    this.bookService.saveBook({
-      body: this.bookRequest
-    }).subscribe({
-      next: (bookId: number) => {
-        if (this.selectedBookCover) {
-          this.bookService.uploadBookCoverPictureRaw(bookId, this.selectedBookCover)
-            .subscribe({
-              next: () => {
-                this.router.navigate(['/products/my-products']);
-              },
-              error: (err: any) => {
-                this.errorMsg = ['Cover upload failed.'];
-                this.router.navigate(['/products/my-products']);
-              }
-            });
+    
+    // If we have coordinates but no address, try to get the address
+    if ((this.bookRequest.latitude && this.bookRequest.longitude) && !this.bookRequest.location) {
+      console.log('Getting address from coordinates');
+      this.updateLocationInfo(this.bookRequest.latitude, this.bookRequest.longitude);
+    }
+    
+    console.log('Saving book with data:', this.bookRequest);
+    
+    // Save the book first
+    const saveObservable = this.bookRequest.id 
+      ? this.bookService.saveBook({
+          body: {
+            ...this.bookRequest
+          }
+        })
+      : this.bookService.saveBook({
+          body: this.bookRequest
+        });
+    
+    saveObservable.subscribe({
+      next: (book) => {
+        console.log('Book saved successfully:', book);
+        // Get the book ID from the response
+        const bookId = typeof book === 'number' ? book : (book as any).id;
+        console.log('Book ID:', bookId);
+        
+        console.log('Checking if we need to upload files...');
+        console.log('Selected book covers length:', this.selectedBookCovers.length);
+        console.log('Selected video exists:', !!this.selectedVideo);
+        
+        // If we have images or video to upload, do that now
+        if (this.selectedBookCovers.length > 0 || this.selectedVideo) {
+          console.log('Starting file uploads...');
+          this.uploadBookImages(bookId);
         } else {
+          console.log('No files to upload, navigating away');
+          // No files to upload, just navigate
+          this.isLoading = false;
           this.router.navigate(['/products/my-products']);
         }
       },
       error: (err: any) => {
-        this.errorMsg = err.error?.validationErrors || ['Failed to save book'];
+        this.handleSaveError(err);
       }
     });
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
+  private uploadBookImages(bookId: number): void {
+    console.log('uploadBookImages called with bookId:', bookId);
+    console.log('selectedBookCovers:', this.selectedBookCovers);
+    console.log('selectedVideo:', this.selectedVideo);
+    
+    if (!this.selectedBookCovers.length && !this.selectedVideo) {
+      console.log('No files to upload, navigating away');
+      this.isLoading = false;
+      this.router.navigate(['/products/my-products']);
       return;
     }
-    
-    this.selectedBookCover = input.files[0];
 
-    if (this.selectedBookCover) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.selectedPicture = reader.result as string;
+    // First upload the video if present
+    const uploadObservable = this.selectedVideo 
+      ? this.uploadVideo(bookId, this.selectedVideo)
+      : new Observable<{videoUrl: string | null}>(subscriber => {
+          subscriber.next({ videoUrl: null });
+          subscriber.complete();
+        });
+
+    uploadObservable.subscribe({
+      next: (videoResponse: { videoUrl: string | null }) => {
+        console.log('Video upload response received:', videoResponse);
+        
+        // Update video preview URL if video was uploaded
+        if (videoResponse?.videoUrl) {
+          console.log('Video upload completed, URL:', videoResponse.videoUrl);
+          this.videoPreview.url = videoResponse.videoUrl;
+        }
+
+        // Then upload the images if present
+        if (this.selectedBookCovers.length > 0) {
+          console.log('Starting image upload for', this.selectedBookCovers.length, 'images');
+          this.bookService.uploadBookImages(
+            bookId,
+            this.selectedBookCovers,
+            true // Set first image as cover
+          ).subscribe({
+            next: (event: any) => {
+              // Handle upload progress
+              if (event.type === 'progress') {
+                console.log(`Upload progress: ${event.percent}%`);
+              } else if (event.type === 'complete' || event.body) {
+                // Upload completed successfully
+                const response = event.body || event.data;
+                console.log('Image upload completed:', response);
+                
+                // Update the URLs in imagePreviews with the actual backend URLs
+                if (response?.images?.length) {
+                  response.images.forEach((img: any, index: number) => {
+                    if (this.imagePreviews[index]) {
+                      this.imagePreviews[index].url = img.imageUrl;
+                    }
+                  });
+                }
+                
+                this.completeUploadProcess();
+              }
+            },
+            error: (error: any) => {
+              console.error('Error uploading images, but continuing with navigation', error);
+              this.completeUploadProcess();
+            }
+          });
+        } else {
+          // No images to upload, just complete the process
+          this.completeUploadProcess();
+        }
+      },
+      error: (error: any) => {
+        console.error('Error in upload process:', error);
+        if (this.selectedBookCovers.length > 0) {
+          // If there are images, continue with image upload even if video failed
+          console.log('Video upload failed, but continuing with image upload');
+          this.uploadImages(bookId);
+        } else {
+          this.completeUploadProcess();
+        }
+      }
+    });
+  }
+
+  private uploadVideo(bookId: number, videoFile: File): Observable<{videoUrl: string}> {
+    console.log('=== STARTING VIDEO UPLOAD ===');
+    console.log('Book ID:', bookId);
+    console.log('Video file name:', videoFile.name);
+    console.log('Video file size:', videoFile.size, 'bytes');
+    console.log('Video file type:', videoFile.type);
+    
+    const formData = new FormData();
+    formData.append('file', videoFile);
+    
+    // Log FormData contents (for debugging)
+    console.log('FormData contents:');
+    for (let pair of (formData as any).entries()) {
+      console.log(`- ${pair[0]}:`, pair[1]);
+    }
+    
+    return new Observable(observer => {
+      console.log('Creating upload observable...');
+      console.log('Calling bookService.uploadBookVideo...');
+      
+      const subscription = this.bookService.uploadBookVideo(bookId, formData).subscribe({
+        next: (event: any) => {
+          console.log('=== VIDEO UPLOAD EVENT ===');
+          console.log('Event type:', event.type);
+          
+          if (event.type === 'progress') {
+            console.log(`Upload progress: ${event.percent}%`);
+            return; // Don't complete on progress events
+          }
+          
+          if (event.type === 'complete' && event.data) {
+            console.log('=== VIDEO UPLOAD COMPLETE ===');
+            console.log('Complete event data:', event.data);
+            
+            // The response from the server is in event.data
+            const response = event.data;
+            
+            // The backend returns the video URL directly in the response
+            const videoUrl = response.videoUrl || response.url || null;
+            console.log('Extracted video URL:', videoUrl);
+            
+            if (!videoUrl) {
+              console.warn('No video URL found in the response!');
+              observer.error(new Error('No video URL in response'));
+              return;
+            }
+            
+            observer.next({ videoUrl });
+            observer.complete();
+          }
+        },
+        error: (error: any) => {
+          console.error('=== VIDEO UPLOAD ERROR ===');
+          console.error('Error object:', error);
+          console.error('Error message:', error?.message);
+          
+          observer.error({
+            message: 'Video upload failed',
+            details: error?.message || 'Unknown error during upload',
+            status: error?.status
+          });
+        },
+        complete: () => {
+          console.log('Video upload observable completed');
+          // Don't complete the outer observable here, it will be completed in the next handler
+        }
+      });
+      
+      // Log subscription for debugging
+      console.log('Upload subscription created:', subscription);
+      
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up video upload subscription');
+        subscription.unsubscribe();
       };
-      reader.readAsDataURL(this.selectedBookCover);
+    });
+  }
+
+  private uploadImages(bookId: number): void {
+    if (this.selectedBookCovers.length === 0) {
+      this.completeUploadProcess();
+      return;
+    }
+
+    console.log('Starting image upload for', this.selectedBookCovers.length, 'images');
+    this.bookService.uploadBookImages(
+      bookId,
+      this.selectedBookCovers,
+      true // Set first image as cover
+    ).subscribe({
+      next: (event: any) => {
+        // Handle upload progress
+        if (event.type === 'progress') {
+          console.log(`Upload progress: ${event.percent}%`);
+        } else if (event.type === 'complete' || event.body) {
+          // Upload completed successfully
+          const response = event.body || event.data;
+          console.log('Image upload completed:', response);
+          
+          // Update the URLs in imagePreviews with the actual backend URLs
+          if (response?.images?.length) {
+            response.images.forEach((img: any, index: number) => {
+              if (this.imagePreviews[index]) {
+                this.imagePreviews[index].url = img.imageUrl;
+              }
+            });
+          }
+          
+          this.completeUploadProcess();
+        }
+      },
+      error: (error: any) => {
+        console.error('Error uploading images:', error);
+        this.completeUploadProcess();
+      }
+    });
+  }
+
+  private completeUploadProcess(): void {
+    console.log('Upload process completed, navigating to my products');
+    this.isLoading = false;
+    this.router.navigate(['/products/my-products']);
+  }
+
+  private handleUploadError(error: any): void {
+    console.error('Error uploading files:', error);
+    this.isLoading = false;
+    
+    // Extract error message from response if available
+    let errorMessage = 'There was an issue uploading your files.';
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.status === 0) {
+      errorMessage = 'Unable to connect to server. Please check your connection.';
+    } else if (error.status === 413) {
+      errorMessage = 'The file(s) you are trying to upload are too large.';
+    } else if (error.status === 415) {
+      errorMessage = 'Unsupported file type. Please check the file formats.';
+    }
+    
+    this.errorMsg = [errorMessage];
+    // Still navigate to my-products even if upload fails
+    setTimeout(() => {
+      this.router.navigate(['/products/my-products']);
+    }, 3000);
+  }
+
+  private handleSaveError(err: any): void {
+    this.isLoading = false;
+    
+    // Handle different types of errors
+    if (err.error) {
+      if (err.error.validationErrors) {
+        this.errorMsg = Array.isArray(err.error.validationErrors) 
+          ? err.error.validationErrors 
+          : [err.error.validationErrors];
+      } else if (err.error.error) {
+        this.errorMsg = [err.error.error];
+      } else if (err.error.message) {
+        this.errorMsg = [err.error.message];
+      } else {
+        this.errorMsg = ['Failed to save book. Please try again.'];
+      }
+    } else if (err.status === 0) {
+      this.errorMsg = ['Unable to connect to server. Please check your internet connection.'];
+    } else {
+      this.errorMsg = ['An unexpected error occurred. Please try again.'];
+    }
+    
+    console.error('Save book error:', err);
+  }
+
+  removeImage(index: number): void {
+    this.imagePreviews.splice(index, 1);
+    this.selectedBookCovers.splice(index, 1);
+  }
+
+  removeVideo(): void {
+    this.videoPreview = { preview: '', url: null, file: null };
+    this.selectedVideo = null;
+  }
+
+  setAsMain(index: number): void {
+    if (index > 0 && index < this.imagePreviews.length) {
+      // Move the selected image to the first position
+      const [movedImage] = this.imagePreviews.splice(index, 1);
+      this.imagePreviews.unshift(movedImage);
+      
+      // Update the selected files array to match
+      if (this.selectedBookCovers.length > index) {
+        const [movedFile] = this.selectedBookCovers.splice(index, 1);
+        this.selectedBookCovers.unshift(movedFile);
+      }
     }
   }
 
-
+  /**
+   * Handles file selection for book covers
+   * @param event The file input change event
+   */
+  onFileSelected(event: Event, type: 'images' | 'video' = 'images'): void {
+    const input = event.target as HTMLInputElement;
+    
+    if (!input.files || input.files.length === 0) return;
+    
+    if (type === 'video') {
+      const file = input.files[0];
+      
+      // Check if file is a video
+      if (!file.type.match('video.*')) {
+        this.errorMsg = ['Only video files are allowed for video upload.'];
+        return;
+      }
+      
+      // Check video file size (max 50MB)
+      if (file.size > this.maxVideoSizeMB * 1024 * 1024) {
+        this.errorMsg = [`Video file is too large. Maximum size is ${this.maxVideoSizeMB}MB.`];
+        return;
+      }
+      
+      // Create video preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.videoPreview = {
+          preview: e.target.result,
+          url: null,
+          file: file
+        };
+      };
+      reader.readAsDataURL(file);
+      
+      // Store the video file
+      this.selectedVideo = file;
+      
+    } else { // Handle images
+      // Calculate how many more images we can add
+      const remainingSlots = this.maxImages - this.imagePreviews.length;
+      if (remainingSlots <= 0) {
+        this.errorMsg = [`You can only upload up to ${this.maxImages} images.`];
+        return;
+      }
+      
+      // Convert FileList to array and take only the number of files we can add
+      const files = Array.from(input.files).slice(0, remainingSlots);
+      
+      files.forEach(file => {
+        // Check if file is an image
+        if (!file.type.match('image.*')) {
+          this.errorMsg = ['Only image files are allowed for image upload.'];
+          return;
+        }
+        
+        // Check file size (max 25MB)
+        if (file.size > 25 * 1024 * 1024) {
+          this.errorMsg = [`File ${file.name} is too large. Maximum size is 25MB.`];
+          return;
+        }
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagePreviews.push({
+            preview: e.target.result,
+            url: null,
+            type: 'image'
+          });
+        };
+        reader.readAsDataURL(file);
+        
+        // Add to selected files
+        this.selectedBookCovers.push(file);
+      });
+    }
+    
+    // Reset the file input
+    input.value = '';
+  }
 }

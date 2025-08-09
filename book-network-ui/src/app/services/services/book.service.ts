@@ -4,12 +4,13 @@
 
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
+import { BookImage } from '../../models/book-image.model';
 
 import { approveReturnBorrowBook } from '../fn/book/approve-return-borrow-book';
 import { ApproveReturnBorrowBook$Params } from '../fn/book/approve-return-borrow-book';
@@ -43,6 +44,283 @@ import { UploadBookCoverPicture$Params } from '../fn/book/upload-book-cover-pict
 export class BookService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
+  }
+
+  /**
+   * Upload multiple images for a book
+   * @param bookId The ID of the book
+   * @param files Array of File objects to upload
+   * @param firstAsCover Whether to set the first image as cover
+   * @returns Observable with upload progress or result
+   */
+  /**
+   * Upload a video for a book
+   * @param bookId The ID of the book
+   * @param formData FormData containing the video file
+   * @returns Observable with upload progress or result
+   */
+  uploadBookVideo(bookId: number, formData: FormData): Observable<any> {
+    if (!bookId || !formData) {
+      return new Observable(subscriber => {
+        subscriber.error(new Error('Invalid book ID or form data'));
+      });
+    }
+
+    console.log(`[BookService] Starting video upload for book ${bookId}`);
+    
+    return new Observable(subscriber => {
+      const url = `${this.rootUrl}/books/${bookId}/video/upload`;
+      console.log(`[BookService] Making request to: ${url}`);
+      
+      const subscription = this.http.post<{
+        success: boolean;
+        message: string;
+        videoUrl: string;
+        url?: string; // Some APIs might return 'url' instead of 'videoUrl'
+      }>(url, formData, {
+        reportProgress: true,
+        observe: 'events',
+        responseType: 'json' as const,
+        withCredentials: true
+      }).subscribe({
+        next: (event: any) => {
+          console.log(`[BookService] Received event type: ${event.type}`);
+          
+          // Handle HttpProgressEvent (type 1)
+          if (event.type === 1) {
+            const percentDone = Math.round(100 * event.loaded / (event.total || 1));
+            console.log(`[BookService] Upload progress: ${percentDone}%`);
+            subscriber.next({
+              type: 'progress',
+              loaded: event.loaded,
+              total: event.total,
+              percent: percentDone
+            });
+          } 
+          // Handle HttpResponse (type 4)
+          else if (event.type === 4) { // HttpResponse
+            console.log('[BookService] Received HTTP response');
+            console.log('Response status:', event.status);
+            
+            // The response body is in event.body
+            const response = event.body || {};
+            console.log('Response body:', response);
+            
+            // Handle different status codes
+            if (event.status === 202) {
+              // 202 Accepted - The request has been accepted for processing
+              console.log('[BookService] Video upload accepted for processing');
+              // We'll consider this a success since the server has accepted the file
+              // The actual processing might be happening asynchronously on the server
+              subscriber.next({
+                type: 'complete',
+                data: {
+                  success: true,
+                  message: 'Video upload accepted for processing',
+                  // Use the original filename as a fallback URL since we don't have the final URL yet
+                  videoUrl: `pending_${(formData.get('file') as File)?.name || 'video'}`
+                }
+              });
+              subscriber.complete();
+            } else if (event.status === 200) {
+              // 200 OK - The request was successful
+              console.log('[BookService] Video upload completed successfully');
+              // Check for video URL in response
+              const videoUrl = response.videoUrl || response.url;
+              if (videoUrl) {
+                console.log(`[BookService] Video URL: ${videoUrl}`);
+                subscriber.next({
+                  type: 'complete',
+                  data: {
+                    success: true,
+                    videoUrl: videoUrl,
+                    ...response
+                  }
+                });
+                subscriber.complete();
+              } else {
+                console.warn('[BookService] No video URL in response:', response);
+                subscriber.error(new Error('No video URL in response'));
+              }
+            } else {
+              // Handle other status codes as errors
+              const errorMsg = response.message || `Server returned status ${event.status}`;
+              console.error('[BookService] Upload failed:', errorMsg);
+              subscriber.error(new Error(errorMsg));
+            }
+          }
+        },
+        error: (error: any) => {
+          console.error('[BookService] Error in upload request:', error);
+          console.error('Error details:', {
+            status: error.status,
+            statusText: error.statusText,
+            error: error.error,
+            message: error.message
+          });
+          
+          let errorMessage = 'Failed to upload video. Please try again.';
+          
+          if (error.error) {
+            if (typeof error.error === 'string') {
+              try {
+                const parsedError = JSON.parse(error.error);
+                errorMessage = parsedError.message || errorMessage;
+              } catch (e) {
+                errorMessage = error.error;
+              }
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
+            }
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          subscriber.error(new Error(errorMessage));
+        },
+        complete: () => {
+          console.log('[BookService] HTTP request completed');
+        }
+      });
+      
+      // Return cleanup function
+      return () => {
+        console.log('[BookService] Cleaning up upload subscription');
+        subscription.unsubscribe();
+      };
+    });
+  }
+
+  /**
+   * Upload multiple images for a book
+   * @param bookId The ID of the book
+   * @param files Array of File objects to upload
+   * @param firstAsCover Whether to set the first image as cover
+   * @returns Observable with upload progress or result
+   */
+  uploadBookImages(bookId: number, files: File[], firstAsCover: boolean = true): Observable<any> {
+    // Validate inputs
+    if (!bookId || !files || files.length === 0) {
+      return new Observable(subscriber => {
+        subscriber.error(new Error('Invalid book ID or no files provided'));
+      });
+    }
+
+    const formData = new FormData();
+    
+    // Add files to form data
+    files.forEach((file: File) => {
+      if (file instanceof File) {
+        formData.append('files', file, file.name);
+      }
+    });
+    
+    formData.append('firstAsCover', firstAsCover.toString());
+    
+    return new Observable(subscriber => {
+      this.http.post<{
+        success: boolean;
+        message: string;
+        images: Array<{
+          id: number;
+          imageUrl: string;
+          isCover: boolean;
+        }>;
+      }>(`${this.rootUrl}/books/${bookId}/images/upload`, formData, {
+        reportProgress: true,
+        observe: 'events',
+        withCredentials: true // Include credentials for authenticated requests
+      }).subscribe({
+        next: (event: any) => {
+          // Forward progress events
+          if (event.type === 1) { // Upload progress
+            const percentDone = Math.round(100 * event.loaded / (event.total || 1));
+            subscriber.next({
+              type: 'progress',
+              loaded: event.loaded,
+              total: event.total,
+              percent: percentDone
+            });
+          } else if (event.status === 200 && event.body) {
+            // Process the successful response
+            try {
+              const response = event.body;
+              if (response.success && response.images) {
+                // Transform image URLs to be absolute if they're relative
+                const processedImages = response.images.map((img: { id: number; imageUrl: string; isCover: boolean }) => ({
+                  ...img,
+                  // Ensure the URL is absolute
+                  imageUrl: img.imageUrl.startsWith('http') || img.imageUrl.startsWith('data:image')
+                    ? img.imageUrl
+                    : `${this.rootUrl}${img.imageUrl.startsWith('/') ? '' : '/'}${img.imageUrl}`
+                }));
+                
+                subscriber.next({
+                  type: 'complete',
+                  data: {
+                    ...response,
+                    images: processedImages
+                  }
+                });
+                subscriber.complete();
+              } else {
+                subscriber.error(new Error(response.message || 'Failed to upload images'));
+              }
+            } catch (e) {
+              console.error('Error processing upload response:', e);
+              subscriber.error(new Error('Failed to process upload response'));
+            }
+          }
+        },
+        error: (error: any) => {
+          console.error('Error uploading images:', error);
+          const errorMessage = error.error?.message || 
+                            error.message || 
+                            'Failed to upload images. Please try again.';
+          subscriber.error(new Error(errorMessage));
+        },
+        complete: () => {
+          // This will be called after next() for successful requests
+          if (!subscriber.closed) {
+            subscriber.complete();
+          }
+        }
+      });
+    });
+  }
+
+  // Get all images for a book
+  getBookImages(params: { bookId: number }): Observable<BookImage[]> {
+    return this.http.get<BookImage[]>(`${this.rootUrl}/books/${params.bookId}/images`).pipe(
+      map((response: any) => {
+        // Ensure we always return an array of BookImage
+        if (Array.isArray(response)) {
+          return response as BookImage[];
+        } else if (response && response.images) {
+          return response.images as BookImage[];
+        }
+        return [];
+      }),
+      catchError((error: any) => {
+        console.error('Error fetching book images:', error);
+        return of([]); // Return empty array on error
+      })
+    );
+  }
+
+  // Delete a book image
+  deleteBookImage(bookId: number, imageId: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.rootUrl}/books/${bookId}/images/${imageId}`
+    ).pipe(
+      catchError(error => {
+        console.error('Error deleting book image:', error);
+        return of({
+          success: false,
+          message: error.error?.message || 'Failed to delete image'
+        });
+      })
+    );
   }
 
   /** Path part for operation `findAllBooks()` */

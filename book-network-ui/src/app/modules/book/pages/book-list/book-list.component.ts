@@ -318,6 +318,12 @@ export class BookListComponent implements OnInit {
         }
         
         this.level = 'error';
+        
+        // Clear error message after 5 seconds
+        setTimeout(() => {
+          this.message = '';
+          this.level = 'success';
+        }, 5000);
         this.isLoading = false;
       }
     });

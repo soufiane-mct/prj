@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 
 import { AdminService } from '../../services/admin.service';
 import { TokenService } from '../../../../services/token/token.service';
+import { CustomDatePipe } from '../../../../shared/pipes/custom-date.pipe';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CustomDatePipe],
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.scss']
 })

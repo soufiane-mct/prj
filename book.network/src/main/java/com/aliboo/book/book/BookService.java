@@ -1,8 +1,8 @@
 package com.aliboo.book.book;
 
 import com.aliboo.book.common.PageResponse;
-import com.aliboo.book.exception.OperationNotPermitedException;
 import com.aliboo.book.file.FileStorageService;
+import com.aliboo.book.exception.OperationNotPermitedException;
 import com.aliboo.book.history.BookTransactionHistory;
 import com.aliboo.book.history.BookTransactionHistoryRepository;
 import com.aliboo.book.user.User;
@@ -19,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
 
 
 @Service
@@ -42,8 +45,100 @@ public class BookService {
 
     private final BookMapper bookMapper;
     private final BookRepository bookRepository;
-    private final BookTransactionHistoryRepository transactionHistoryRepository ;
+    private final BookTransactionHistoryRepository transactionHistoryRepository;
+    private final BookImageService bookImageService;
     private final FileStorageService fileStorageService;
+
+    @Transactional
+    public void uploadBookCoverPicture(MultipartFile file, Authentication connectedUser, Integer bookId) {
+        // Get the authenticated user
+        User user = (User) connectedUser.getPrincipal();
+        
+        // Wrap single file in a list and upload as the first (cover) image
+        List<MultipartFile> files = new ArrayList<>();
+        files.add(file);
+        bookImageService.uploadBookImages(bookId, files, true, user.getId());
+    }
+    
+    /**
+     * Uploads a video file for a book
+     * @param file The video file to upload
+     * @param connectedUser The authenticated user
+     * @param bookId The ID of the book to associate the video with
+     * @throws EntityNotFoundException if the book is not found
+     * @throws OperationNotPermitedException if the user is not the owner of the book
+     * @throws RuntimeException if there's an error uploading the file
+     */
+    @Transactional
+    public void uploadBookVideo(MultipartFile file, Authentication connectedUser, Integer bookId) {
+        log.info("=== STARTING VIDEO UPLOAD FOR BOOK ID: {} ===", bookId);
+        log.info("Original filename: {}", file.getOriginalFilename());
+        log.info("Content type: {}", file.getContentType());
+        log.info("File size: {} bytes", file.getSize());
+        
+        // Get the authenticated user
+        User user = (User) connectedUser.getPrincipal();
+        log.info("Authenticated user ID: {}", user.getId());
+        
+        // Find the book
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> {
+                    String errorMsg = "No book found with ID: " + bookId;
+                    log.error(errorMsg);
+                    return new EntityNotFoundException(errorMsg);
+                });
+        
+        // Verify the user is the owner of the book
+        if (!book.getOwner().getId().equals(user.getId())) {
+            String errorMsg = String.format("User %s is not authorized to upload videos for book %d", 
+                    user.getEmail(), bookId);
+            log.error(errorMsg);
+            throw new OperationNotPermitedException("You are not allowed to upload videos for this book");
+        }
+        
+        try {
+            // Create a clean subdirectory path for the video
+            String bookSubPath = String.format("books/user_%d/book_%d/videos", user.getId(), bookId);
+            log.info("Uploading video to subdirectory: {}", bookSubPath);
+            
+            // Ensure the filename is not null
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.trim().isEmpty()) {
+                originalFilename = "video_" + System.currentTimeMillis() + ".mp4";
+                log.warn("Original filename was null or empty, using generated name: {}", originalFilename);
+            }
+            
+            // Create a new MultipartFile with the ensured filename
+            CustomMultipartFile customFile = new CustomMultipartFile(
+                file.getBytes(),
+                originalFilename,
+                file.getContentType() != null ? file.getContentType() : "video/mp4"
+            );
+            
+            // Upload the video file
+            log.info("Starting file upload...");
+            String videoUrl = fileStorageService.uploadFile(customFile, bookSubPath);
+            
+            if (videoUrl == null || videoUrl.trim().isEmpty()) {
+                String errorMsg = "Failed to upload video: Empty URL returned from file storage service";
+                log.error(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+            
+            log.info("Video uploaded successfully. Updating book with video URL: {}", videoUrl);
+            
+            // Update the book with the video URL
+            book.setVideoUrl(videoUrl);
+            book = bookRepository.save(book);
+            
+            log.info("Successfully updated book {} with video URL: {}", bookId, videoUrl);
+            
+        } catch (Exception e) {
+            String errorMsg = String.format("Error uploading video for book ID %d: %s", bookId, e.getMessage());
+            log.error(errorMsg, e);
+            throw new RuntimeException("Failed to upload video: " + e.getMessage(), e);
+        }
+    }
 
     public Integer save(BookRequest request, Authentication connectedUser) {
         // Get the authenticated user
@@ -69,6 +164,9 @@ public class BookService {
         book.setFullAddress(request.fullAddress().trim());
         book.setLatitude(request.latitude());
         book.setLongitude(request.longitude());
+        
+        // Set createdBy to the current user's ID (mapped by auditing field name in BaseEntity)
+        book.setCratedBy(user.getId());
         
         // Save the book
         return bookRepository.save(book).getId();
@@ -368,56 +466,81 @@ public class BookService {
     }
 
     public Integer borrowBook(Integer bookId, Authentication connectedUser) {
-        Book book = bookRepository.findById(bookId) //jib lia book id o diro f book
-                .orElseThrow(()-> new EntityNotFoundException("No book found with the ID::" + bookId)); //mknsh book id drr hd err
-        //anshofo l book khas ykon not archaved o sharbel bch ead n3tiwh l function d borrow
-        if (book.isArchived() || !book.isShareable()){// || hadi or
-            throw new OperationNotPermitedException("the requested book cannot be borrowed since it is archived or not shareable "); //lkn archived ola sharbel dir hd l err
+        // Find the book by ID
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("No book found with the ID: " + bookId));
+        
+        // Check if book is archived or not shareable
+        if (book.isArchived() || !book.isShareable()) {
+            throw new OperationNotPermitedException("The requested book cannot be borrowed since it is archived or not shareable");
         }
-        //ola kn l id book sehih o mshi archived o shareable dir hdshi
-        User user = ((User) connectedUser.getPrincipal()); //jib lia l connected user mn Authentication o diro f var user
-        //hna andiro l book maykonsh dyal l owner (y3ni l connected user mydirsh borrow l ktab dyalo)
-        if (Objects.equals(book.getOwner().getId(), user.getId())) { //book owner id an9arnoh mea connected user id lakn howa nit dir lia exeption
-            throw new OperationNotPermitedException("You cannot borrow you own book"); // OperationNotPermittedException dyalna drnaha fl exception file o kola exeption khas ndiro lih handel o drnah wl andiroh f globalexeptionHandler lfile dyalna
+        
+        // Get the authenticated user
+        User user = ((User) connectedUser.getPrincipal());
+        
+        // Check if user is trying to borrow their own book
+        if (Objects.equals(book.getOwner().getId(), user.getId())) {
+            throw new OperationNotPermitedException("You cannot borrow your own book");
         }
-        //hna anshofo l book wsh already borrowed 3an tari9 isAlreadyBorrowedByUser lidrnaha f BookTransactionHistoryRepository interface
+        
+        // Check if the book is already borrowed by this user and not returned
         final boolean isAlreadyBorrowed = transactionHistoryRepository.isAlreadyBorrowedByUser(bookId, user.getId());
-        if(isAlreadyBorrowed) {
-            throw new OperationNotPermitedException("The requested book is already borrowed");
+        if (isAlreadyBorrowed) {
+            throw new OperationNotPermitedException("The requested book is already borrowed by you");
         }
-        //lmknosh gae dok l exeption dir lia build l BookTransactionHistory b data li endna user connected user o book lifih book id o dir false l returned o returnApproved
+        
+        // Create a new book transaction history record
         BookTransactionHistory bookTransactionHistory = BookTransactionHistory.builder()
                 .user(user)
                 .book(book)
                 .returned(false)
                 .returnApproved(false)
                 .build();
-        //drna false y3ni l book drna lih borrow mahedo deja mekri y3ni ba9i marj3 y3ni returned(false) o returnApproved(false)
-        return transactionHistoryRepository.save(bookTransactionHistory).getId(); //id d transaction shd l vars d bookTransactionHistory o 3mrhom b l9iyam li drna l fo9 3antari9 BookTransactionHistoryRepository
-    }
-
-    public Integer returnBorrowedBook(Integer bookId, Authentication connectedUser) {
-        //njibo l book
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(()-> new EntityNotFoundException("No book found with the ID::" + bookId));
-        //mykonsh archived
-        if (book.isArchived() || !book.isShareable()){
-            throw new OperationNotPermitedException("the requested book cannot be borrowed since it is archived or not shareable ");
-        }
-        //l user mydirsh retern l book dyalo (connected user)
-        User user = ((User) connectedUser.getPrincipal());
-        if (Objects.equals(book.getOwner().getId(), user.getId())) {
-            throw new OperationNotPermitedException("You cannot return your own book");
-        }
-        //nt2kdo bli l user deja borrowa l book bch ymkn yrj3o mnb3d
-        List<BookTransactionHistory> transactions = transactionHistoryRepository.findByBookIdAndUserId(bookId, user.getId());
-        if (transactions.isEmpty()) {
-            throw new OperationNotPermitedException("You did not borrow this Book");
-        }
-        BookTransactionHistory bookTransactionHistory = transactions.get(0); // Get the most recent transaction
-        //lmkn ta if mn hdshi li lfo9 ead dir returned borrowed book
-        bookTransactionHistory.setReturned(true);
+                
+        // Save and return the transaction ID
         return transactionHistoryRepository.save(bookTransactionHistory).getId();
+    }
+    
+    /**
+     * Handles returning a borrowed book by a user
+     * @param bookId The ID of the book being returned
+     * @param connectedUser The authenticated user returning the book
+     * @return The ID of the updated transaction
+     * @throws EntityNotFoundException if the book is not found
+     * @throws OperationNotPermitedException if the user doesn't have permission to return the book
+     */
+    @Transactional
+    public Integer returnBorrowedBook(Integer bookId, Authentication connectedUser) {
+        // Get the authenticated user
+        User user = ((User) connectedUser.getPrincipal());
+        
+        // Verify the book exists
+        if (!bookRepository.existsById(bookId)) {
+            throw new EntityNotFoundException("No book found with ID: " + bookId);
+        }
+        
+        // Find the most recent borrowing transaction for this user and book
+        List<BookTransactionHistory> transactions = transactionHistoryRepository
+                .findByBookIdAndUserId(bookId, user.getId());
+                
+        if (transactions.isEmpty()) {
+            throw new OperationNotPermitedException("You did not borrow this book");
+        }
+        
+        // Get the most recent transaction
+        BookTransactionHistory transaction = transactions.get(0);
+        
+        // Check if the book is already returned
+        if (transaction.isReturned()) {
+            throw new OperationNotPermitedException("This book has already been returned");
+        }
+        
+        // Mark the book as returned (but not yet approved)
+        transaction.setReturned(true);
+        transaction.setReturnApproved(false);
+        
+        // Save the updated transaction
+        return transactionHistoryRepository.save(transaction).getId();
     }
 
 
@@ -444,20 +567,7 @@ public class BookService {
         }
         BookTransactionHistory bookTransactionHistory = transactions.get(0); // Get the most recent transaction
         bookTransactionHistory.setReturnApproved(true);
-
-        return transactionHistoryRepository.save(bookTransactionHistory).getId() ;
-    }
-
-
-    public void uploadBookCoverPicture(MultipartFile file, Authentication connectedUser, Integer bookId) {
-        //hna andiro service akher li ay3wna bch ndiro upload l file
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(()-> new EntityNotFoundException("No book found with the ID::" + bookId));
-        User user = ((User) connectedUser.getPrincipal());
-        var bookCover = fileStorageService.saveFile(file, user.getId());//f kola user dir lia folder li andir fih upload all file dyal user
-        book.setBookCover(bookCover);
-        bookRepository.save(book);
-
+        return transactionHistoryRepository.save(bookTransactionHistory).getId();
     }
 
     public Book getBookEntityById(Integer bookId) {

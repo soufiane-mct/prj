@@ -2,6 +2,8 @@ package com.aliboo.book.book;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,9 +19,11 @@ public class BookResponse {
     private Double longitude;
     private String synopsis;
     private String owner;
-    private byte[] cover;//arr mno3 byte
-    private double rate;//t9yim dl avrege d all lfeedback(lkno 5 feedback o kmlin etaw 5 stars adir 5*5/5/5) hesbnaha fl book class
+    private List<String> cover; // List of image URLs
+    private double rate;
     private boolean archived;
     private boolean shareable;
     private String categoryName;
+    private Integer categoryId; // Added to match the BookMapper update
+    private String videoUrl; // URL for the book's video
 }

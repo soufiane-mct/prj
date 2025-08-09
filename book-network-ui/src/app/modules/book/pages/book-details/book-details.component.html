@@ -25,23 +25,74 @@
   <div class="main-content">
     <!-- Product Image Section -->
     <div class="image-section">
-      <div class="image-container">
-        <img 
-          [src]="book.cover ? 'data:image/jpg;base64,' + book.cover : 'https://source.unsplash.com/user/c_v_r/1900x800'" 
-          [alt]="book.title"
-          class="product-image"
-        >
-        <div class="image-overlay">
-          <div class="status-badge" 
-               [class.available]="book.shareable && !book.archived"
-               [class.borrowed]="!book.shareable && !book.archived"
-               [class.archived]="book.archived">
-            <i class="fas" 
-               [class.fa-check-circle]="book.shareable && !book.archived"
-               [class.fa-clock]="!book.shareable && !book.archived"
-               [class.fa-archive]="book.archived"></i>
-            {{ book.archived ? 'Archived' : (book.shareable ? 'Available' : 'Rented') }}
+      <div class="image-gallery">
+        <!-- Main Image/Video -->
+        <div class="main-image-container">
+          <!-- Video Player -->
+          <div *ngIf="bookImages[currentImageIndex]?.isVideo" class="video-player-container">
+            <video 
+              controls
+              playsinline
+              class="video-player"
+              #videoPlayer
+              (playing)="onVideoPlay()"
+            >
+              <source [src]="bookImages[currentImageIndex]?.videoUrl" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
           </div>
+          
+          <!-- Image -->
+          <img 
+            *ngIf="!bookImages[currentImageIndex]?.isVideo"
+            [src]="bookImages[currentImageIndex]?.imageUrl || 'https://source.unsplash.com/user/c_v_r/1900x800'" 
+            [alt]="book.title"
+            class="product-image"
+          >
+          
+          <!-- Navigation Arrows -->
+          <button *ngIf="bookImages.length > 1" class="nav-arrow left-arrow" (click)="prevImage()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button *ngIf="bookImages.length > 1" class="nav-arrow right-arrow" (click)="nextImage()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          
+          <!-- Status Badge -->
+          <div class="image-overlay">
+            <div class="status-badge" 
+                 [class.available]="book.shareable && !book.archived"
+                 [class.borrowed]="!book.shareable && !book.archived"
+                 [class.archived]="book.archived">
+              <i class="fas" 
+                 [class.fa-check-circle]="book.shareable && !book.archived"
+                 [class.fa-clock]="!book.shareable && !book.archived"
+                 [class.fa-archive]="book.archived"></i>
+              {{ book.archived ? 'Archived' : (book.shareable ? 'Available' : 'Rented') }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Thumbnails -->
+        <div class="thumbnail-container" [class.has-thumbnails]="bookImages.length > 0">
+          <div 
+            *ngFor="let item of bookImages; let i = index"
+            class="thumbnail"
+            [class.active]="i === currentImageIndex"
+            [class.video-item]="item.isVideo"
+            (click)="goToImage(i)">
+            
+            <div class="thumbnail-inner">
+              <img 
+                [src]="item.isVideo ? (item.thumbnail || 'assets/images/video-thumbnail.png') : item.imageUrl" 
+                [alt]="item.isVideo ? 'Video thumbnail' : 'Thumbnail ' + (i + 1)"
+                class="thumbnail-image"
+                [class.video-thumbnail]="item.isVideo">
+              
+              <div *ngIf="item.isVideo" class="video-play-overlay">
+                <i class="fas fa-play"></i>
+              </div>
+            </div>
         </div>
       </div>
     </div>
