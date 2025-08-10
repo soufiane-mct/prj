@@ -349,6 +349,18 @@ export class ManageBookComponent implements OnInit {
     console.log('Selected video:', this.selectedVideo);
     console.log('Selected book covers:', this.selectedBookCovers);
     
+    // Check if we have at least one image
+    if (this.imagePreviews.length === 0 && this.selectedBookCovers.length === 0) {
+      console.log('No images provided');
+      this.errorMsg = ['Please add at least one image for your Product.'];
+      this.isLoading = false;
+      // Clear the error message after 5 seconds
+      setTimeout(() => {
+        this.errorMsg = [];
+      }, 5000);
+      return;
+    }
+    
     // Check if we have a location
     if ((!this.bookRequest.latitude || !this.bookRequest.longitude) && !this.bookRequest.location) {
       console.log('No location provided');
