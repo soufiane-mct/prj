@@ -224,7 +224,9 @@
 // Image Gallery Styles
 .image-gallery {
   position: relative;
-  
+  width: 100%;
+  max-width: none;    /* remplace max-width: 600px; */
+  margin: 0;          
   // Video Player Styles
   .video-player-container {
   position: absolute;
@@ -260,9 +262,7 @@
     }
   }
   }
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 2rem;
+
   
   .main-image-container {
     position: relative;
@@ -437,15 +437,16 @@
 .main-content {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 4rem;
+  // grid-template-columns: 1.2fr 0.8fr;
+  align-items: start;
+  gap: 28px;
   max-width: 1400px;
   margin: 2rem auto 4rem;
   padding: 0 2rem;
   
   @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
+  .main-content { flex-direction: column; gap: 20px; }
+}
   
   @media (max-width: 768px) {
     padding: 0 1.5rem;
@@ -455,8 +456,8 @@
 
 // Image Section
 .image-section {
-  position: relative;
-  
+ min-width: 0; 
+
   .image-container {
     position: relative;
     border-radius: 16px;
@@ -534,6 +535,7 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  min-width: 0;
   
   &:hover {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
