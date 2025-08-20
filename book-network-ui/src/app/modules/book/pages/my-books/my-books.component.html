@@ -105,9 +105,10 @@
     </div>
   </div>
 </div>
-<div class="d-flex justify-content-start gap-4 flex-wrap">
+<div class="container">
+<div class="row g-4">
+   <div class="col-md-3" *ngFor="let book of filteredBooks">
   <app-book-card
-    *ngFor="let book of filteredBooks"
     [book]="book"
     [manage]="true"
     (archive)="archiveBook(book)"
@@ -115,6 +116,8 @@
     (edit)="editBook(book)"
     (delete)="openDeleteModal(book)"
   ></app-book-card>
+</div>
+</div>
 </div>
 <div class="d-flex justify-content-center mt-3">
   <nav aria-label="Page navigation example">
