@@ -242,3 +242,63 @@
 .notification-close:hover {
   color: #7c3aed;
 }
+
+
+/* Carte */
+.search-panel{
+  background:#fff; border-radius:18px; padding:24px 28px;
+  box-shadow:0 10px 30px rgba(16,24,40,.06); margin-bottom:24px;
+  display:flex;
+}
+.search-head h1{ margin:0 0 6px; font-weight:800; }
+.search-head p{ margin:0 0 18px; color:#667085; }
+
+/* Grille: 3 champs + bouton */
+.search-grid{
+  display:grid;
+  grid-template-columns: 1fr 1.2fr 1.2fr auto;
+  gap:16px;
+  align-items:center;
+}
+
+/* Label + input sur une seule ligne */
+.field-inline{
+  // display:flex; align-items:center; gap:12px; min-width:0;
+  font-size: 15px;
+}
+.field-label{
+  font-weight:700; color:#111827; white-space:nowrap;
+  font-size: 13px;
+}
+
+/* Champs (même hauteur/arrondi) */
+.form-select,.form-control,.location-input{
+  flex:1 1 auto; height:44px; padding:0 12px;
+  border:1px solid #e5e7eb; border-radius:12px; background:#fff;
+  font-size: 15px;
+}
+
+/* “Select location” style input */
+.location-input{
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  font-size: 15px;
+  width: 90%;
+}
+
+/* Bouton violet à droite */
+.btn-wrap{ display:flex; justify-content:flex-end; align-items:center; 
+  margin-top: 20px;
+}
+.btn-search{
+  // height:44px; padding:0 22px; border:none; border-radius:12px;
+  background:#635bff; color:#fff; font-weight:700;
+  
+}
+.btn-search:hover{ filter:brightness(.95); }
+
+/* Mobile: passe en pile proprement */
+@media (max-width: 992px){
+  .search-grid{ grid-template-columns: 1fr; }
+  .btn-wrap{ justify-content:stretch; }
+  .btn-search{ width:100%; }
+}

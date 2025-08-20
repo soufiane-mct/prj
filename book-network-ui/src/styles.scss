@@ -263,11 +263,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 4px;
-  
+  background: gray;
+  border-radius: 2px;  
   &:hover {
-    background: var(--primary-dark);
+    background: rgb(73, 72, 72);
   }
 }
 
